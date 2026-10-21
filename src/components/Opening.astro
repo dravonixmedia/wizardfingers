@@ -6,10 +6,13 @@ const { stages } = opening;
 const shared = backgrounds.opening.shared;
 const stageMedia = stages.map((s) => backgrounds.opening.stages[s.id]);
 const hasVideo = [shared, ...stageMedia].some((m) => m?.type === 'video');
+// One Anton headline size for every stage, from the longest headline. Anton averages ≈ 0.38em per
+// character ("Intelligence." measures 4.9em); 0.41 leaves ≈ 8% breathing room inside the gutters.
+const fit = Math.max(...stages.map((s) => s.headline.length)) * 0.41;
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
-<section class="opening" aria-labelledby="opening-title" style={`--stages:${stages.length}`} data-opening>
+<section class="opening" aria-labelledby="opening-title" style={`--stages:${stages.length};--fit:${fit}`} data-opening>
   <div class="opening__frame">
     {
       shared && (
@@ -87,6 +90,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
      The three disciplines are presented as a clear vertical sequence.
      --------------------------------------------------------------------- */
   .opening {
+    /* Width-fitted to the longest headline, capped by height so the face stays clear. */
+    --headline: min(calc((100vw - 2 * var(--gutter)) / var(--fit)), 25svh, 16rem);
     position: relative;
     background: var(--c-black);
   }
@@ -109,24 +114,26 @@ const pad = (n: number) => String(n).padStart(2, '0');
     z-index: 2;
     display: grid;
     justify-items: center;
-    gap: 6px;
+    gap: 4px;
     padding: calc(var(--header-h) + 40px) var(--gutter) 0;
     font-weight: 400;
     text-align: center;
   }
 
   .opening__name {
-    font-size: clamp(1.125rem, 1rem + 0.45vw, 1.5rem);
-    font-weight: 600;
-    line-height: 1.1;
-    letter-spacing: -0.015em;
+    font-family: var(--f-hero);
+    font-size: clamp(1rem, 0.85rem + 0.55vw, 1.5rem);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
   .opening__role {
-    font-family: var(--f-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
+    font-size: clamp(0.8125rem, 0.76rem + 0.22vw, 1rem);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: 0.005em;
     color: rgb(242 240 234 / 0.82);
   }
 
@@ -150,17 +157,20 @@ const pad = (n: number) => String(n).padStart(2, '0');
     z-index: 1;
     display: grid;
     justify-items: center;
-    gap: clamp(10px, 1.2vw, 16px);
+    gap: clamp(8px, 1.3svh, 16px);
     text-align: center;
   }
 
+  /* Anton's letters span 0.93em above the baseline and 0.13em below it (I, l, t / g, y), but its
+     line box is far taller. line-height 1.12 is the smallest that keeps every rendered letter
+     inside the headline's own row (visible top 0.055em below the row's top), so nothing can reach
+     the identity line above or the supporting line below; the row gaps add the visible space. */
   .stage__headline {
-    font-family: var(--f-display);
-    font-size: var(--h-hero);
-    font-weight: 600;
-    line-height: 1;
-    padding-bottom: 0.06em; /* room for descenders (g, y) above the supporting line */
-    letter-spacing: -0.035em;
+    font-family: var(--f-hero);
+    font-size: var(--headline);
+    font-weight: 400;
+    line-height: 1.12;
+    letter-spacing: -0.005em;
     white-space: nowrap;
     color: var(--c-ivory);
   }
@@ -281,6 +291,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     font-size: 0.72rem;
     letter-spacing: 0.12em;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .opening__progress {
@@ -330,7 +341,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   :global(html.opening-pinned) .opening__identity {
     padding-top: 0;
-    padding-bottom: clamp(6px, 1.2svh, 14px);
+    padding-bottom: clamp(4px, 0.8svh, 10px);
     z-index: 3;
   }
 
@@ -372,14 +383,22 @@ const pad = (n: number) => String(n).padStart(2, '0');
       transform 0.45s var(--ease-in-out);
   }
 
-  :global(html.opening-pinned) .stage.is-before .stage__headline,
   :global(html.opening-pinned) .stage.is-before .stage__supporting {
-    transform: translateY(-0.6rem);
+    transform: translateY(-0.3rem);
   }
 
-  :global(html.opening-pinned) .stage.is-after .stage__headline,
   :global(html.opening-pinned) .stage.is-after .stage__supporting {
     transform: translateY(0.9rem);
+  }
+
+  /* The headline moves less than the gaps around it, so an outgoing or incoming headline never
+     crosses into the identity line above or the supporting line below. */
+  :global(html.opening-pinned) .stage.is-before .stage__headline {
+    transform: translateY(-0.3rem);
+  }
+
+  :global(html.opening-pinned) .stage.is-after .stage__headline {
+    transform: translateY(0.3rem);
   }
 
   :global(html.opening-pinned) .stage.is-active .stage__headline,
@@ -401,7 +420,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   /* Comfortable, responsive gap between the text group and the controls. */
   :global(html.opening-pinned) .opening__bar {
-    padding-top: clamp(20px, 4.5svh, 52px);
+    padding-top: clamp(30px, 5svh, 52px);
+  }
+
+  /* Short landscape screens (e.g. 1366×600): a slightly lower cap keeps the face clear. */
+  @media (orientation: landscape) and (max-height: 660px) {
+    .opening {
+      --headline: min(calc((100vw - 2 * var(--gutter)) / var(--fit)), 22svh, 16rem);
+    }
   }
 
   @media (max-width: 720px) {
