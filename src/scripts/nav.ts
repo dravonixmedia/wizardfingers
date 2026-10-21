@@ -19,7 +19,8 @@ export function initNavState() {
   const io = new IntersectionObserver(
     (entries) => {
       entries.forEach((e) => visible.set(e.target, e.isIntersecting));
-      const current = targets.find((t) => visible.get(t.el));
+      // Last match: with the curtain sections, a covered section still sits under the band.
+      const current = targets.filter((t) => visible.get(t.el)).at(-1);
       targets.forEach((t) => {
         if (t === current) t.a.setAttribute('aria-current', 'true');
         else t.a.removeAttribute('aria-current');
