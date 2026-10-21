@@ -34,10 +34,11 @@ export function initMotion() {
 function openingEntrance() {
   const items = gsap.utils.toArray<HTMLElement>('[data-hero-in]');
   const firstText = document.querySelector<HTMLElement>('.stage.is-active .stage__text');
-  const firstBg = document.querySelector<HTMLElement>('.stage.is-active [data-bg], .opening__shared [data-bg]');
   const tl = gsap.timeline({ defaults: { ease: EASE, duration: 1.2 } });
 
-  if (firstBg) tl.fromTo(firstBg, { scale: 1.06 }, { scale: 1, duration: 2.4, ease: 'power2.out', clearProps: 'transform' }, 0);
+  // Background media is deliberately never animated here. This module loads after first
+  // paint, so any transform on the poster/video would snap from its painted state and
+  // visibly jerk the hero (and fight the poster → video handover).
   if (firstText) tl.fromTo(firstText, { autoAlpha: 0, y: 36 }, { autoAlpha: 1, y: 0, duration: 1.3, clearProps: 'all' }, 0.15);
   tl.fromTo(items, { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, stagger: 0.1, clearProps: 'transform' }, 0.05);
 }

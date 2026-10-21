@@ -85,16 +85,32 @@ the poster. Reduced motion, Data Saver and blocked autoplay also show the poster
 **Use H.264 MP4, not HEVC/H.265.** Firefox and many Chrome installs cannot decode HEVC
 (especially 10-bit "Main 10"), so those visitors would only see the poster. The current hero
 was delivered as HEVC. The untouched master lives in `media-source/backgrounds/hero.mp4`, outside
-`public/`, so it is never deployed. The site serves H.264 encodes made from it:
+`public/`, so it is never deployed. The site serves H.264 encodes built from it by
+**`scripts/encode-hero.sh`** (requires ffmpeg with libx264):
 
-```sh
-ffmpeg -i media-source/backgrounds/hero.mp4 -an -c:v libx264 -preset slow -crf 21 -profile:v high -pix_fmt yuv420p \
-  -r 24 -g 48 -movflags +faststart public/media/backgrounds/hero-1080.mp4
-ffmpeg -i media-source/backgrounds/hero.mp4 -an -vf scale=1280:720 -c:v libx264 -preset slow -crf 23 -profile:v high \
-  -pix_fmt yuv420p -r 24 -g 48 -movflags +faststart public/media/backgrounds/hero-720.mp4
-```
+| Output | Purpose |
+| --- | --- |
+| `public/media/backgrounds/hero-loop-1080.mp4` | desktop (≈1.3 MB) |
+| `public/media/backgrounds/hero-loop-720.mp4` | phones (≈0.5 MB) |
+| `src/media/backgrounds/hero-poster.jpg` | exact first frame of the 1080p encode |
 
-The poster (`src/media/backgrounds/hero-poster.jpg`) is the sharpest frame (≈ 2.0 s) of the video.
+The script also makes the clip loop smoothly. Each step fixes a measured problem:
+
+- **Trim + 1 s crossfade loop.** The master's first frames contain an abrupt settle and its
+  last frame doesn't match its first (a 2 px jump at every loop). Frames 4–218 are kept and
+  the final second dissolves into the frames just before the loop start, so the last frame
+  flows into the first. Result: 7.9 s loop with no visible seam.
+- **One keyframe, `scenecut=0`.** Periodic keyframes produced a quality "tick" every 2 s.
+- **`mbtree=0`.** Otherwise x264 lowers the quality of the final frames and the loop restart
+  looks like a sharpness "pop".
+- **Poster = frame 0**, converted with the video's BT.709 limited-range settings, so the
+  poster → video handover is pixel-identical (the page reveals the video only after its
+  first frame has been presented).
+
+When replacing the hero video: put the new master in `media-source/backgrounds/`, adjust
+`MASTER`, `A`, `B` and `L` in the script if needed, run it, and use new output file names
+(e.g. `hero-loop-v2-1080.mp4`) so browsers holding the old cached file can't pair it with the
+new poster. Don't animate the background's scale or position in entrance animations.
 
 Recommended video: 1920×1080 (mobile 1080×1920 or 720×1280), 6–15 s seamless loop,
 H.264 MP4 with `-movflags +faststart`, no audio track, ≤ 8 MB (mobile ≤ 3 MB).
