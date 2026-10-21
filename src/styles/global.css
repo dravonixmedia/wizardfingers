@@ -406,6 +406,68 @@ ol {
   color: var(--c-gray);
 }
 
+/* Section chapters (scripts/chapters.ts; JS on, motion allowed) ------------
+   One sticky full-screen frame holds the Motion → Intelligence → Digital (→ About) backgrounds;
+   the sections scroll over it and their backgrounds crossfade. */
+
+.chapters {
+  position: relative;
+}
+
+.chapters__track {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.chapters__stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--c-black);
+}
+
+/* Extends to the large viewport so mobile browser bars never reveal a gap. */
+.chapters__layer {
+  position: absolute;
+  inset: 0 0 calc(100svh - 100lvh);
+}
+
+.chapters__layer > .bg {
+  transform: none !important;
+}
+
+/* The approved About framing starts below the fixed header, as in its own section. */
+.chapters__layer[data-bg-for='about'] {
+  top: var(--header-h);
+}
+
+.chapters__veil {
+  position: absolute;
+  inset: 0;
+  background: var(--c-black);
+  opacity: 0;
+}
+
+.chapters > section {
+  z-index: 1;
+}
+
+/* Section scrims scroll with their text over the shared frame: feather their top and bottom
+   edges so a section boundary never shows as a hard line. */
+.chapters > section > .feature__scrim,
+.chapters > section > .about__scrim {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
+}
+
+[data-chapter-copy] {
+  will-change: opacity, transform;
+}
+
 /* Motion: reveal hooks (only hidden while JS motion is active) ------------- */
 
 html.motion [data-hero-in] {

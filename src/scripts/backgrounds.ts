@@ -42,8 +42,10 @@ export function initBackgrounds() {
 
   const sourceFor = (v: HTMLVideoElement) => (mobile.matches ? v.dataset.srcMobile : v.dataset.src);
 
-  /** False when the video sits inside an opening stage that isn't the active one. */
+  /** False when the video sits inside an opening stage or section chapter layer that isn't shown. */
   const stageActive = (v: HTMLVideoElement) => {
+    const layer = v.closest<HTMLElement>('[data-chapter-layer]');
+    if (layer && !layer.classList.contains('is-active')) return false;
     const stage = v.closest<HTMLElement>('[data-stage]');
     return !stage || stage.classList.contains('is-active') || !document.documentElement.classList.contains('opening-pinned');
   };
@@ -129,8 +131,11 @@ export function initBackgrounds() {
     // Controls only matter when a background video can actually play here.
     const canPlay = !saveData && !prefersReducedMotion();
     toggles.forEach((t) => {
-      const scope = t.closest('section') ?? document;
+      const section = t.closest('section');
+      const scope = section ?? document;
       const own = Array.from(scope.querySelectorAll<HTMLVideoElement>('video[data-bg-video]'));
+      // A section's background may live in the chapter frame (see chapters.ts).
+      if (section?.id) own.push(...document.querySelectorAll<HTMLVideoElement>(`[data-bg-for="${section.id}"] video[data-bg-video]`));
       t.hidden = !canPlay || !own.some((v) => sourceFor(v) && !failed.has(v));
       const label = t.querySelector('[data-bg-toggle-label]');
       if (label) label.textContent = paused ? 'Play' : 'Pause';
@@ -148,7 +153,10 @@ export function initBackgrounds() {
 
   renderToggles();
 
-  document.addEventListener('wf:bg-refresh', syncAll);
+  document.addEventListener('wf:bg-refresh', () => {
+    renderToggles();
+    syncAll();
+  });
   mobile.addEventListener('change', () => {
     renderToggles();
     syncAll();
