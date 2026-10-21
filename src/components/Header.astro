@@ -1,20 +1,17 @@
 ---
-import { site } from '../content';
+import { navigation, site } from '../content';
 
 interface Props {
   linkBase?: string;
 }
 const { linkBase = '/' } = Astro.props;
-const links = [
-  { href: `${linkBase}#work`, label: 'Work' },
-  { href: `${linkBase}#about`, label: 'About' },
-  { href: `${linkBase}#contact`, label: 'Contact' },
-];
+const links = navigation.map((l) => ({ ...l, href: `${linkBase}${l.href}` }));
+const contactHref = `${linkBase}#contact`;
 ---
 
 <header class="site-header" data-header>
-  <a class="wordmark" href="/" aria-label={`${site.brand} — home`}>
-    <span class="wordmark__a">Wizard</span><span class="wordmark__b serif">Fingers</span>
+  <a class="wordmark" href="/" aria-label={`${site.wordmark.name}${site.wordmark.tld} — home`}>
+    <span class="wordmark__name">{site.wordmark.name}</span><span class="wordmark__tld">{site.wordmark.tld}</span>
   </a>
 
   <nav class="nav" aria-label="Primary">
@@ -30,6 +27,8 @@ const links = [
       }
     </ul>
   </nav>
+
+  <a class="header-cta" href={contactHref} data-nav-link>Contact</a>
 
   <button
     class="menu-toggle"
@@ -55,7 +54,7 @@ const links = [
   <nav aria-label="Mobile">
     <ul>
       {
-        links.map((l, i) => (
+        [...links, { href: contactHref, label: 'Contact' }].map((l, i) => (
           <li>
             <a href={l.href} data-menu-link>
               <span class="label">0{i + 1}</span>
@@ -66,7 +65,7 @@ const links = [
       }
     </ul>
   </nav>
-  <p class="label mobile-menu__foot">{site.brand} · {site.name}</p>
+  <p class="label mobile-menu__foot">{site.wordmark.name}{site.wordmark.tld} · {site.name}</p>
 </div>
 
 <style>
@@ -74,9 +73,9 @@ const links = [
     position: fixed;
     inset: 0 0 auto;
     z-index: 100;
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
     gap: 24px;
     height: var(--header-h);
     padding-inline: var(--gutter);
@@ -104,32 +103,32 @@ const links = [
     opacity: 1;
   }
 
+  /* Text wordmark: heavy grotesk name + light TLD */
   .wordmark {
+    justify-self: start;
     display: inline-flex;
     align-items: baseline;
-    gap: 0.28em;
     padding: 8px 0;
     color: var(--c-ivory);
     text-decoration: none;
-    font-size: 1.12rem;
+    font-family: var(--f-body);
+    font-size: clamp(1.05rem, 0.95rem + 0.4vw, 1.3rem);
     line-height: 1;
-    text-shadow: 0 1px 12px rgb(10 10 11 / 0.6);
+    letter-spacing: -0.045em;
   }
 
-  .wordmark__a {
-    font-family: var(--f-display);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+  .wordmark__name {
+    font-weight: 800;
   }
 
-  .wordmark__b {
-    font-size: 1.28em;
-    color: var(--c-ivory);
+  .wordmark__tld {
+    font-weight: 300;
+    letter-spacing: -0.02em;
     transition: color var(--t-fast);
   }
 
-  .wordmark:hover .wordmark__b,
-  .wordmark:focus-visible .wordmark__b {
+  .wordmark:hover .wordmark__tld,
+  .wordmark:focus-visible .wordmark__tld {
     color: var(--c-blue);
   }
 
@@ -149,13 +148,12 @@ const links = [
     display: inline-flex;
     align-items: center;
     min-height: 40px;
-    padding: 0 18px;
+    padding: 0 16px;
     border-radius: 999px;
-    color: var(--c-ivory);
-    font-family: var(--f-mono);
-    font-size: 0.74rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    color: rgb(242 240 234 / 0.86);
+    font-size: 0.9rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
     text-decoration: none;
     transition:
       background-color var(--t-fast),
@@ -164,6 +162,28 @@ const links = [
 
   .nav a:hover {
     background: rgb(242 240 234 / 0.08);
+    color: var(--c-ivory);
+  }
+
+  .header-cta {
+    justify-self: end;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    background: var(--c-ivory);
+    color: var(--c-black);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color var(--t-fast), color var(--t-fast);
+  }
+
+  .header-cta:hover,
+  .header-cta[aria-current='true'] {
+    background: var(--c-blue);
+    color: var(--c-ivory);
   }
 
   .nav a[aria-current='true'] {
@@ -183,6 +203,7 @@ const links = [
   }
 
   .menu-toggle {
+    justify-self: end;
     display: none;
     align-items: center;
     gap: 12px;
@@ -239,7 +260,8 @@ const links = [
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: calc(var(--header-h) + 32px) var(--gutter) 32px;
+    padding: calc(var(--header-h) + 24px) var(--gutter) 32px;
+    overflow-y: auto;
     background:
       radial-gradient(120% 60% at 100% 0%, rgb(66 117 255 / 0.22), transparent 60%),
       var(--c-black);
@@ -265,7 +287,8 @@ const links = [
   }
 
   .mobile-menu .display {
-    font-size: clamp(3.5rem, 18vw, 6rem);
+    font-size: clamp(2.4rem, 11.5vw, 4.5rem);
+    line-height: 1;
   }
 
   .mobile-menu a:active .display,
@@ -273,8 +296,12 @@ const links = [
     color: var(--c-blue);
   }
 
-  @media (max-width: 720px) {
-    .nav {
+  @media (max-width: 1080px) {
+    .site-header {
+      grid-template-columns: 1fr auto;
+    }
+    .nav,
+    .header-cta {
       display: none;
     }
     .menu-toggle {

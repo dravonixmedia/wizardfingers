@@ -126,6 +126,10 @@ ol {
   color: var(--c-ivory);
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* Focus ------------------------------------------------------------------ */
 
 :focus {
@@ -227,7 +231,7 @@ ol {
 
 .section {
   position: relative;
-  padding-block: clamp(80px, 10vw, 150px);
+  padding-block: clamp(64px, 8vw, 120px);
 }
 
 .section-head {
@@ -348,6 +352,31 @@ ol {
 .link-line:hover,
 .link-line:focus-visible {
   background-size: 100% 1px;
+}
+
+/* Background video pause/play control (sections) */
+.bg-toggle {
+  position: absolute;
+  right: var(--gutter);
+  bottom: 20px;
+  z-index: 2;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgb(242 240 234 / 0.3);
+  border-radius: 999px;
+  background: rgb(10 10 11 / 0.45);
+  color: var(--c-ivory);
+  font-family: var(--f-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color var(--t-fast), color var(--t-fast);
+}
+
+.bg-toggle:hover {
+  background: var(--c-ivory);
+  color: var(--c-black);
 }
 
 /* Grain overlay ----------------------------------------------------------- */

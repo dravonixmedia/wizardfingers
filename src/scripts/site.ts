@@ -1,6 +1,7 @@
 import { initMenu } from './menu';
 import { initNavState } from './nav';
-import { initDimensions } from './dimensions';
+import { initOpening } from './opening';
+import { initBackgrounds } from './backgrounds';
 import { initWork } from './work';
 import { initMedia } from './media';
 import { initShowreel } from './showreel';
@@ -20,7 +21,8 @@ function boot() {
   initWork();
   initMedia();
   initShowreel();
-  const dims = initDimensions();
+  initOpening();
+  initBackgrounds();
 
   document.querySelectorAll<HTMLElement>('[data-year]').forEach((el) => {
     el.textContent = String(new Date().getFullYear());
@@ -30,7 +32,7 @@ function boot() {
     // GSAP is loaded only when motion is allowed.
     import('./motion')
       .then(({ initMotion }) => {
-        initMotion({ onDimension: dims?.setAnimator });
+        initMotion();
         window.__wfMotionReady = true;
       })
       .catch(() => document.documentElement.classList.remove('motion'));

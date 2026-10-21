@@ -1,0 +1,413 @@
+---
+import BackgroundMedia from './BackgroundMedia.astro';
+import { backgrounds, opening, site } from '../content';
+
+const { stages } = opening;
+const shared = backgrounds.opening.shared;
+const stageMedia = stages.map((s) => backgrounds.opening.stages[s.id]);
+const hasVideo = [shared, ...stageMedia].some((m) => m?.type === 'video');
+// One headline size for all stages, derived from the longest headline (Anton averages ≈ 0.38em per character).
+const fit = Math.max(...stages.map((s) => s.headline.length)) * 0.39;
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<section class="opening" aria-labelledby="opening-title" style={`--stages:${stages.length};--fit:${fit}`} data-opening>
+  <div class="opening__frame">
+    {
+      shared && (
+        <div class="opening__shared">
+          <BackgroundMedia media={shared} variant="motion" priority />
+        </div>
+      )
+    }
+
+    <h1 id="opening-title" class="opening__identity" data-hero-in>
+      <span class="opening__name">{opening.identity.name}</span>
+      <span class="opening__role">{opening.identity.role}</span>
+    </h1>
+
+    <ol class="opening__stages" aria-label="Disciplines">
+      {
+        stages.map((s, i) => (
+          <li class:list={['stage', i === 0 ? 'is-active' : 'is-after']} data-stage={i}>
+            {!shared && (
+              <div class="stage__media">
+                <BackgroundMedia media={stageMedia[i]} variant={s.id} priority={i === 0} />
+              </div>
+            )}
+            <div class="stage__text">
+              <p class="stage__headline">{s.headline}</p>
+              <p class="stage__supporting">{s.supporting}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="opening__bar" data-hero-in>
+      <a class="opening__cue" href="#work">
+        <span class="opening__cue-line" aria-hidden="true"></span>
+        <span aria-hidden="true">{opening.scrollCue}</span>
+        <span class="sr-only">Skip to selected work</span>
+      </a>
+
+      <div class="opening__controls">
+        {
+          site.showreel && (
+            <button class="opening__btn opening__btn--text" type="button" data-showreel-open aria-haspopup="dialog">
+              <span aria-hidden="true">▶</span> Showreel
+            </button>
+          )
+        }
+        {
+          hasVideo && (
+            <button class="opening__btn opening__btn--text" type="button" data-bg-toggle hidden>
+              <span data-bg-toggle-label>Pause</span><span class="sr-only"> background video</span>
+            </button>
+          )
+        }
+        <div class="opening__nav" data-stage-nav hidden>
+          <button class="opening__btn" type="button" data-stage-prev aria-label="Previous discipline" disabled>
+            <span aria-hidden="true">←</span>
+          </button>
+          <span class="opening__count" aria-hidden="true">
+            <span data-stage-current>01</span> / {pad(stages.length)}
+          </span>
+          <span class="opening__progress" aria-hidden="true"><i data-stage-progress></i></span>
+          <button class="opening__btn" type="button" data-stage-next aria-label="Next discipline">
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------------------------------------------------------------------
+     Base (static) layout: used without JS and with prefers-reduced-motion.
+     The three disciplines are presented as a clear vertical sequence.
+     --------------------------------------------------------------------- */
+  .opening {
+    --headline: min(calc((100vw - 2 * var(--gutter)) / var(--fit)), 26svh, 15rem);
+    position: relative;
+    background: var(--c-black);
+  }
+
+  .opening__frame {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .opening__shared {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .opening__identity {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    padding: calc(var(--header-h) + 40px) var(--gutter) 0;
+    font-weight: 400;
+    text-align: center;
+  }
+
+  .opening__name {
+    font-family: var(--f-display);
+    font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.25rem);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .opening__role {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(242 240 234 / 0.82);
+  }
+
+  .stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 72svh;
+    padding: 48px var(--gutter);
+  }
+
+  .stage__media {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .stage__text {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .stage__headline {
+    font-family: var(--f-display);
+    font-size: var(--headline);
+    line-height: 0.86;
+    padding-bottom: 0.12em; /* room for descenders (g, y) above the supporting line */
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    color: var(--c-ivory);
+  }
+
+  .stage__supporting {
+    font-family: var(--f-mono);
+    font-size: clamp(0.7rem, 0.62rem + 0.3vw, 0.86rem);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(242 240 234 / 0.86);
+  }
+
+  .opening__bar {
+    position: relative;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px var(--gutter) calc(20px + env(safe-area-inset-bottom));
+  }
+
+  .opening__cue {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: rgb(242 240 234 / 0.85);
+  }
+
+  .opening__cue-line {
+    position: relative;
+    width: 1px;
+    height: 28px;
+    overflow: hidden;
+    background: rgb(242 240 234 / 0.25);
+  }
+
+  .opening__cue-line::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -50%;
+    width: 1px;
+    height: 50%;
+    background: var(--c-ivory);
+    animation: cue 2.2s var(--ease-in-out) infinite;
+  }
+
+  @keyframes cue {
+    to {
+      top: 100%;
+    }
+  }
+
+  .opening__controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .opening__nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .opening__nav[hidden] {
+    display: none;
+  }
+
+  .opening__btn {
+    display: inline-grid;
+    place-items: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 1px solid rgb(242 240 234 / 0.3);
+    border-radius: 999px;
+    background: rgb(10 10 11 / 0.35);
+    color: var(--c-ivory);
+    cursor: pointer;
+    transition:
+      background-color var(--t-fast),
+      border-color var(--t-fast),
+      opacity var(--t-fast);
+  }
+
+  .opening__btn--text {
+    padding: 0 16px;
+    font-family: var(--f-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .opening__btn:hover:not(:disabled) {
+    background: var(--c-ivory);
+    border-color: var(--c-ivory);
+    color: var(--c-black);
+  }
+
+  .opening__btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .opening__count {
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .opening__progress {
+    position: relative;
+    width: 96px;
+    height: 1px;
+    background: rgb(242 240 234 / 0.25);
+  }
+
+  .opening__progress i {
+    position: absolute;
+    inset: 0;
+    background: var(--c-ivory);
+    transform-origin: left;
+    transform: scaleX(var(--p, 0));
+  }
+
+  /* ---------------------------------------------------------------------
+     Pinned mode (JS on, motion allowed): one sticky full-screen frame,
+     native scrolling through a bounded section drives the three stages.
+     --------------------------------------------------------------------- */
+  :global(html.opening-pinned) .opening {
+    height: calc(100svh + var(--stages) * 80svh);
+  }
+
+  :global(html.opening-pinned) .opening__frame {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+
+  /* Media extends to the large viewport so mobile browser bars never reveal a gap. */
+  :global(html.opening-pinned) .opening__shared,
+  :global(html.opening-pinned) .stage__media {
+    position: absolute;
+    inset: 0 0 calc(100svh - 100lvh);
+    z-index: 0;
+  }
+
+  :global(html.opening-pinned) .opening__identity {
+    padding-top: 0;
+    padding-bottom: clamp(10px, 1.6svh, 20px);
+    z-index: 3;
+  }
+
+  :global(html.opening-pinned) .opening__stages {
+    display: grid;
+    z-index: 2;
+  }
+
+  :global(html.opening-pinned) .stage {
+    position: static;
+    grid-area: 1 / 1;
+    min-height: 0;
+    padding: 0 var(--gutter);
+    align-items: flex-start;
+  }
+
+  :global(html.opening-pinned) .stage__text {
+    z-index: 2;
+  }
+
+  /* Stage media: the incoming layer fades in above the outgoing one, which
+     only fades out afterwards — no dark or empty frames between stages. */
+  :global(html.opening-pinned) .stage__media {
+    opacity: 0;
+    transition: opacity 0.9s var(--ease-in-out) 0.9s;
+  }
+
+  :global(html.opening-pinned) .stage.is-active .stage__media {
+    opacity: 1;
+    z-index: 1;
+    transition-delay: 0s;
+  }
+
+  :global(html.opening-pinned) .stage__headline,
+  :global(html.opening-pinned) .stage__supporting {
+    opacity: 0;
+    transition:
+      opacity 0.32s var(--ease-in-out),
+      transform 0.45s var(--ease-in-out);
+  }
+
+  :global(html.opening-pinned) .stage.is-before .stage__headline,
+  :global(html.opening-pinned) .stage.is-before .stage__supporting {
+    transform: translateY(-0.6rem);
+  }
+
+  :global(html.opening-pinned) .stage.is-after .stage__headline,
+  :global(html.opening-pinned) .stage.is-after .stage__supporting {
+    transform: translateY(0.9rem);
+  }
+
+  :global(html.opening-pinned) .stage.is-active .stage__headline,
+  :global(html.opening-pinned) .stage.is-active .stage__supporting {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 0.7s var(--ease-out) 0.2s,
+      transform 0.9s var(--ease-out) 0.2s;
+  }
+
+  :global(html.opening-pinned) .stage.is-active .stage__supporting {
+    transition-delay: 0.32s;
+  }
+
+  :global(html.opening-pinned) .opening__cue {
+    display: inline-flex;
+  }
+
+  :global(html.opening-pinned) .opening__bar {
+    padding-top: clamp(12px, 2.4svh, 28px);
+  }
+
+  @media (max-width: 720px) {
+    .opening__progress {
+      display: none;
+    }
+    .stage__supporting {
+      max-width: 30ch;
+      line-height: 1.6;
+    }
+  }
+</style>

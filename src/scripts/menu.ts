@@ -53,7 +53,7 @@ export function initMenu() {
   );
 
   // Close if the viewport grows past the mobile breakpoint.
-  window.matchMedia('(min-width: 721px)').addEventListener('change', (e) => {
+  window.matchMedia('(min-width: 1081px)').addEventListener('change', (e) => {
     if (e.matches) setOpen(false, false);
   });
 }

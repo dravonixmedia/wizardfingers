@@ -21,6 +21,8 @@ interface Props {
   jsonLd?: Record<string, unknown>[];
   /** Header link base: "" on the homepage, "/" elsewhere. */
   linkBase?: string;
+  /** Page contains the pinned three-stage opening. */
+  hasOpening?: boolean;
 }
 
 const {
@@ -33,6 +35,7 @@ const {
   noindex = false,
   jsonLd = [],
   linkBase = '/',
+  hasOpening = false,
 } = Astro.props;
 
 const canonical = new URL(path, site.url).toString();
@@ -74,15 +77,18 @@ const ogImageUrl = new URL(ogImage, site.url).toString();
     {jsonLd.map((data) => <script type="application/ld+json" is:inline set:html={JSON.stringify(data)} />)}
 
     <!-- Enable JS motion only when the user allows it; never leave content hidden if scripts fail. -->
-    <script is:inline>
+    <script is:inline data-pin-opening={hasOpening ? '1' : undefined}>
       (function () {
         var d = document.documentElement;
         d.classList.add('js');
         if (window.matchMedia && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           d.classList.add('motion');
+          // Pinned three-stage opening; falls back to the static sequence if its script never starts.
+          if (document.currentScript && document.currentScript.dataset.pinOpening) d.classList.add('opening-pinned');
           setTimeout(function () {
             if (!window.__wfMotionReady) d.classList.remove('motion');
-          }, 2500);
+            if (!window.__wfOpeningReady) d.classList.remove('opening-pinned');
+          }, 3000);
         }
       })();
     </script>

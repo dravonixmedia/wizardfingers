@@ -30,5 +30,8 @@ export function initWork() {
   };
 
   buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.filter!)));
-  document.addEventListener('wf:filter', (e) => apply((e as CustomEvent<string>).detail));
+  // "All Motion work" links in the discipline sections pre-filter the grid.
+  document.querySelectorAll<HTMLAnchorElement>('[data-filter-link]').forEach((a) =>
+    a.addEventListener('click', () => apply(a.dataset.filterLink!)),
+  );
 }

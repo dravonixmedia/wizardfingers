@@ -1,23 +1,29 @@
 ---
 import ProjectCard from './ProjectCard.astro';
-import { dimensions, publishedProjects, work } from '../content';
+import { dimensionLabels, publishedProjects, work } from '../content';
 
 const LAYOUTS = ['wide', 'left', 'right', 'narrow', 'offset'];
-const filters = [{ id: 'all', label: 'All' }, ...dimensions.map((d) => ({ id: d.id, label: d.label }))];
+const filters = [{ id: 'all', label: 'All' }, ...Object.entries(dimensionLabels).map(([id, label]) => ({ id, label }))];
 const counts: Record<string, number> = { all: publishedProjects.length };
 for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0) + 1;
 ---
 
-<section class="section work" id="work" aria-labelledby="work-title" data-work>
+<section class:list={['work', publishedProjects.length === 0 && 'work--empty']} id="work" aria-labelledby="work-title" data-work>
   <div class="wrap">
-    <div class="section-head" data-reveal>
-      <p class="label label--accent">{work.label}</p>
-      <h2 id="work-title" class="display">{work.headline}</h2>
-      <p>{work.intro}</p>
+    <div class="work__head" data-reveal>
+      <h2 id="work-title" class="work__title display">{work.headline}</h2>
+      {publishedProjects.length > 0 ? (
+        <p class="work__intro">{work.intro}</p>
+      ) : (
+        <div class="work__empty">
+          <p class="work__empty-title serif">{work.emptyTitle}</p>
+          <p class="work__empty-text">{work.emptyText}</p>
+        </div>
+      )}
     </div>
 
     {
-      publishedProjects.length > 0 ? (
+      publishedProjects.length > 0 && (
         <>
           <div class="work__filters" role="group" aria-label="Filter projects by dimension" data-filters>
             {filters.map((f, i) => (
@@ -41,37 +47,71 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
             ))}
           </ol>
         </>
-      ) : (
-        <div class="work__empty" data-reveal>
-          <div class="work__empty-frame" aria-hidden="true">
-            <span class="label">Scene 01 · Take 01</span>
-            <span class="work__empty-tc label">00:00:00:00</span>
-          </div>
-          <div class="work__empty-copy">
-            <p class="work__empty-title serif">{work.emptyTitle}</p>
-            <p class="work__empty-text">{work.emptyText}</p>
-          </div>
-        </div>
       )
     }
   </div>
 </section>
 
 <style>
+  .work {
+    padding-block: clamp(72px, 9vw, 128px);
+  }
+
+  .work--empty {
+    padding-block: clamp(56px, 7vw, 96px);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .work__head {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: 16px var(--gutter);
+    align-items: end;
+    padding-bottom: clamp(24px, 3vw, 40px);
+    margin-bottom: clamp(28px, 4vw, 56px);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .work--empty .work__head {
+    padding-bottom: 0;
+    margin-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .work__title {
+    font-size: clamp(2.9rem, 1.4rem + 5vw, 7rem);
+    line-height: 0.88;
+  }
+
+  .work__intro,
+  .work__empty-text {
+    color: var(--c-gray);
+    max-width: 40ch;
+  }
+
+  .work__empty {
+    display: grid;
+    gap: 8px;
+  }
+
+  .work__empty-title {
+    font-size: var(--step-2);
+    line-height: 1.1;
+  }
+
   .work__filters {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    margin-bottom: clamp(40px, 6vw, 80px);
+    margin-bottom: clamp(32px, 5vw, 64px);
   }
 
   .work__filter {
     display: inline-flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 4px;
     min-height: 44px;
     padding: 0 18px;
-    align-items: center;
     border: 1px solid var(--c-line-strong);
     border-radius: 999px;
     background: transparent;
@@ -114,56 +154,13 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
   .work__grid {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: clamp(64px, 9vw, 140px) var(--gutter);
-  }
-
-  /* Empty state */
-  .work__empty {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 32px var(--gutter);
-    align-items: center;
-  }
-
-  .work__empty-frame {
-    grid-column: 1 / span 7;
-    position: relative;
-    aspect-ratio: 2.39 / 1;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    padding: 20px;
-    border: 1px solid var(--c-line);
-    background:
-      linear-gradient(90deg, transparent 33.2%, var(--c-line) 33.3%, transparent 33.4%, transparent 66.6%, var(--c-line) 66.7%, transparent 66.8%),
-      linear-gradient(transparent 33.2%, var(--c-line) 33.3%, transparent 33.4%, transparent 66.6%, var(--c-line) 66.7%, transparent 66.8%),
-      radial-gradient(60% 80% at 70% 40%, rgb(66 117 255 / 0.16), transparent 70%),
-      var(--c-charcoal);
-  }
-
-  .work__empty-tc {
-    color: var(--c-blue);
-  }
-
-  .work__empty-copy {
-    grid-column: 9 / -1;
-    display: grid;
-    gap: 16px;
-  }
-
-  .work__empty-title {
-    font-size: var(--step-3);
-    line-height: 1;
-  }
-
-  .work__empty-text {
-    color: var(--c-gray);
+    gap: clamp(56px, 7vw, 112px) var(--gutter);
   }
 
   @media (max-width: 900px) {
-    .work__empty-frame,
-    .work__empty-copy {
-      grid-column: 1 / -1;
+    .work__head {
+      grid-template-columns: 1fr;
+      align-items: start;
     }
   }
 </style>
