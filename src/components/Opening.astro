@@ -306,8 +306,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
     height: calc(100svh + var(--stages) * 80svh);
   }
 
-  /* The text group is centred vertically between the header and the bottom controls: equal
-     auto margins above the identity and above the control bar. */
+  /* The text group sits at the bottom centre, just above the controls (content packs to the
+     bottom); the header height is reserved so it can never collide on short screens. */
   :global(html.opening-pinned) .opening__frame {
     position: sticky;
     top: 0;
@@ -329,7 +329,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
 
   :global(html.opening-pinned) .opening__identity {
-    margin-top: auto;
     padding-top: 0;
     padding-bottom: clamp(6px, 1.2svh, 14px);
     z-index: 3;
@@ -400,9 +399,9 @@ const pad = (n: number) => String(n).padStart(2, '0');
     display: inline-flex;
   }
 
+  /* Comfortable, responsive gap between the text group and the controls. */
   :global(html.opening-pinned) .opening__bar {
-    margin-top: auto;
-    padding-top: clamp(12px, 2.4svh, 28px);
+    padding-top: clamp(20px, 4.5svh, 52px);
   }
 
   @media (max-width: 720px) {
