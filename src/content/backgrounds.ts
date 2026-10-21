@@ -48,8 +48,36 @@ export const backgrounds: {
     },
   },
   sections: {
-    motion: undefined,
-    intelligence: undefined,
+    // Pre-wedding film: a couple in a tea estate. Source master (not deployed):
+    // media-source/backgrounds/motion-hero.mp4 (1276×718, 79 s, with audio).
+    // Web versions are built by scripts/encode-section-backgrounds.sh: title card, black/white
+    // transitions and the faded black-and-white outro trimmed; a 29 s colour excerpt that
+    // starts on the couple's close-up. Text sits bottom-left; faces sit in the upper half.
+    motion: {
+      type: 'video',
+      src: '/media/backgrounds/motion-loop-720p.mp4',
+      mobileSrc: '/media/backgrounds/motion-loop-mobile.mp4',
+      poster: 'backgrounds/motion-poster.jpg',
+      mobilePoster: 'backgrounds/motion-poster-mobile.jpg',
+      position: '50% 30%',
+      mobilePosition: '50% 20%',
+      overlay: 0.5,
+    },
+    // Short film of a bright, wood-panelled interior. Source master (not deployed):
+    // media-source/backgrounds/Intelligence-hero.mp4 (1920×1080, 17.8 s, with audio).
+    // Web versions are built by scripts/encode-section-backgrounds.sh: opening fade-up trimmed,
+    // a 17.4 s loop that restarts on a clean cut. The footage is bright, so the overlay is
+    // stronger; the text sits on the right (bottom on phones).
+    intelligence: {
+      type: 'video',
+      src: '/media/backgrounds/intelligence-loop-1080.mp4',
+      mobileSrc: '/media/backgrounds/intelligence-loop-720.mp4',
+      poster: 'backgrounds/intelligence-poster.jpg',
+      mobilePoster: 'backgrounds/intelligence-poster-mobile.jpg',
+      position: '50% 40%',
+      mobilePosition: '50% 30%',
+      overlay: 0.6,
+    },
     // Screen recording of the Timeless Knot website (a real Digital project), scrolling from its
     // hero to its footer. Source master (not deployed): media-source/backgrounds/timeless-knot-hero.mp4.
     // Web versions are built by scripts/encode-timeless-knot.sh: loading frames trimmed, black
