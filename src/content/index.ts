@@ -1,11 +1,12 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { experiments as allExperiments } from './experiments';
+import { linkProjects as allLinkProjects } from './link-projects';
 import { projects as allProjects } from './projects';
 import { sampleExperiments, sampleProjects } from './samples';
 import { backgrounds } from './backgrounds';
 import { site } from './site';
-import type { BackgroundMedia, ContactLinks, Dimension, Experiment, FilmSource, MediaImage, Project } from './types';
+import type { BackgroundMedia, ContactLinks, Dimension, Experiment, FilmSource, LinkProject, MediaImage, Project } from './types';
 import { imageExists } from '../lib/media';
 
 export * from './site';
@@ -140,6 +141,20 @@ function checkBackground(where: string, m: BackgroundMedia | undefined) {
   if (m.overlay !== undefined && (m.overlay < 0 || m.overlay > 1)) fail(`${where}: overlay must be between 0 and 1`);
 }
 
+function validateLinkProjects(list: LinkProject[]) {
+  for (const l of list) {
+    const where = `link project "${l.title}"`;
+    if (!l.title?.trim() || !l.type?.trim() || !l.label?.trim()) fail(`${where}: title, type and label are required`);
+    if (!DIMENSIONS.includes(l.category)) fail(`${where}: category must be one of ${DIMENSIONS.join(', ')}`);
+    if (typeof l.order !== 'number') fail(`${where}: order must be a number`);
+    try {
+      if (new URL(l.url).protocol !== 'https:') fail(`${where}: url must use https`);
+    } catch {
+      fail(`${where}: invalid url "${l.url}"`);
+    }
+  }
+}
+
 function validateSite() {
   if (site.showreel) checkFilm('site.showreel', site.showreel);
   checkBackground('backgrounds.opening.shared', backgrounds.opening.shared);
@@ -152,6 +167,7 @@ const sourceExperiments = samplesEnabled ? [...allExperiments, ...sampleExperime
 
 validateProjects(sourceProjects);
 validateExperiments(sourceExperiments);
+validateLinkProjects(allLinkProjects);
 validateSite();
 
 if (problems.length) {
@@ -185,6 +201,13 @@ export function nextProject(slug: string) {
   const i = publishedProjects.findIndex((p) => p.slug === slug);
   if (i < 0 || publishedProjects.length < 2) return undefined;
   return publishedProjects[(i + 1) % publishedProjects.length];
+}
+
+/** Published link-only projects in a dimension, by order. */
+export function linkProjectsFor(dimension: Dimension): LinkProject[] {
+  return allLinkProjects
+    .filter((l) => l.published && l.category === dimension)
+    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
 }
 
 /** Published projects in a dimension, featured first, then by order. */

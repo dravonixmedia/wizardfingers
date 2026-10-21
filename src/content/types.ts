@@ -100,6 +100,25 @@ export interface Experiment {
   sample?: boolean;
 }
 
+/**
+ * A real project shown only as a name, type and external link in its discipline
+ * section (Motion / Intelligence / Digital). No media and no detail page.
+ * Use `Project` instead when there are images, a film or a write-up.
+ */
+export interface LinkProject {
+  title: string;
+  /** Short type label, e.g. "Website" or "Web app". */
+  type: string;
+  category: Dimension;
+  /** Full https URL of the live project. */
+  url: string;
+  /** Visible link text, e.g. "Visit Website". An ↗ arrow is added automatically. */
+  label: string;
+  published: boolean;
+  /** Lower numbers appear first. */
+  order: number;
+}
+
 export type ShowreelSource = FilmSource;
 
 export interface ContactLinks {

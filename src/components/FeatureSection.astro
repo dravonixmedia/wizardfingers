@@ -1,7 +1,7 @@
 ---
 import BackgroundMedia from './BackgroundMedia.astro';
 import Media from './Media.astro';
-import { backgrounds, projectsFor, type FeatureCopy } from '../content';
+import { backgrounds, linkProjectsFor, projectsFor, type FeatureCopy } from '../content';
 
 interface Props {
   feature: FeatureCopy;
@@ -12,6 +12,7 @@ interface Props {
 const { feature, layout } = Astro.props;
 const media = backgrounds.sections[feature.id];
 const related = projectsFor(feature.id).slice(0, 3);
+const links = linkProjectsFor(feature.id);
 ---
 
 <section class:list={['feature', `feature--${layout}`, !media && 'feature--no-media']} id={feature.id} aria-labelledby={`${feature.id}-title`}>
@@ -44,6 +45,25 @@ const related = projectsFor(feature.id).slice(0, 3);
               All {feature.label} work →
             </a>
           </div>
+        )
+      }
+
+      {
+        links.length > 0 && (
+          <ul class="feature__links" aria-label={`${feature.label} projects`}>
+            {links.map((l) => (
+              <li class="feature__link-row">
+                <div class="feature__link-meta">
+                  <h3 class="feature__link-title">{l.title}</h3>
+                  <p class="feature__link-type label">{l.type}</p>
+                </div>
+                <a class="feature__link label" href={l.url} target="_blank" rel="noopener noreferrer">
+                  {l.label} <span aria-hidden="true">↗</span>
+                  <span class="sr-only">: {l.title} (opens in a new tab)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         )
       }
     </div>
@@ -183,6 +203,70 @@ const related = projectsFor(feature.id).slice(0, 3);
   .feature__item:focus-visible .feature__arrow {
     transform: translateX(4px);
     color: var(--c-blue);
+  }
+
+  /* Link-only projects: name, type and an external link (no media, no detail page). */
+  .feature__links {
+    display: grid;
+    margin-top: 12px;
+    border-top: 1px solid var(--c-line-strong);
+  }
+
+  .feature__link-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 24px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--c-line-strong);
+  }
+
+  .feature__link-meta {
+    display: grid;
+    gap: 4px;
+  }
+
+  .feature__link-title {
+    font-family: var(--f-display);
+    font-size: clamp(1.4rem, 1.1rem + 1vw, 2rem);
+    font-weight: 400;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .feature__link-type {
+    color: rgb(242 240 234 / 0.75);
+  }
+
+  .feature__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    color: var(--c-ivory);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--t-fast),
+      border-color var(--t-fast),
+      color var(--t-fast);
+  }
+
+  .feature__link:hover {
+    background: var(--c-ivory);
+    border-color: var(--c-ivory);
+    color: var(--c-black);
+  }
+
+  .feature__link:focus-visible {
+    outline: 2px solid var(--c-blue);
+    outline-offset: 3px;
+    border-color: var(--c-ivory);
   }
 
   .feature__all {
