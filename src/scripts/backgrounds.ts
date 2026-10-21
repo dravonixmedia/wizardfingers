@@ -58,9 +58,32 @@ export function initBackgrounds() {
     v.dataset.loadedSrc = src;
   };
 
+  /**
+   * Reveal the video over its poster only once a decoded frame has actually been
+   * presented. The poster is the video's exact first frame, so the handover is invisible;
+   * revealing earlier (e.g. on `playing`) can briefly show an empty video layer.
+   */
+  const reveal = (v: HTMLVideoElement) => {
+    if (v.classList.contains('is-playing') || v.dataset.revealPending) return;
+    v.dataset.revealPending = '1';
+    const show = () => {
+      delete v.dataset.revealPending;
+      if (!failed.has(v)) v.classList.add('is-playing');
+    };
+    if ('requestVideoFrameCallback' in v) {
+      v.requestVideoFrameCallback(() => show());
+    } else {
+      const afterPaint = () => requestAnimationFrame(() => requestAnimationFrame(show));
+      if ((v as HTMLVideoElement).readyState >= 2) afterPaint();
+      else (v as HTMLVideoElement).addEventListener('loadeddata', afterPaint, { once: true });
+    }
+  };
+
   const sync = (v: HTMLVideoElement) => {
     if (visible.has(v) && stageActive(v) && allowed(v)) {
       ensureSource(v);
+      // Already playing (e.g. a stage change with the shared video): leave it alone.
+      if (!v.paused) return;
       const p = v.play();
       p?.catch(() => {
         // Autoplay rejected or source failed: keep the poster.
@@ -76,7 +99,7 @@ export function initBackgrounds() {
   const syncAll = () => videos.forEach(sync);
 
   videos.forEach((v) => {
-    v.addEventListener('playing', () => v.classList.add('is-playing'));
+    v.addEventListener('playing', () => reveal(v));
     v.addEventListener('error', () => {
       failed.add(v);
       v.classList.remove('is-playing');

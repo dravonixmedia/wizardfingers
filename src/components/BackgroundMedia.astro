@@ -115,9 +115,11 @@ const isVideo = media?.type === 'video' && Boolean(main);
     object-position: var(--bg-pos);
   }
 
+  /* Hidden until its first frame is presented (see scripts/backgrounds.ts). The poster is
+     that exact frame, so this short fade only smooths decoder rounding. */
   .bg__video {
     opacity: 0;
-    transition: opacity 0.8s var(--ease-out);
+    transition: opacity 0.4s linear;
   }
 
   .bg__video:global(.is-playing) {
