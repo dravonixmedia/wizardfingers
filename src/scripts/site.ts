@@ -2,6 +2,7 @@ import { initMenu } from './menu';
 import { initNavState } from './nav';
 import { initOpening } from './opening';
 import { initBackgrounds } from './backgrounds';
+import { initChapters } from './chapters';
 import { initWork } from './work';
 import { initMedia } from './media';
 import { initShowreel } from './showreel';
@@ -22,6 +23,9 @@ function boot() {
   initMedia();
   initShowreel();
   initOpening();
+  // Before backgrounds and motion: it moves section backgrounds into the chapter frame and
+  // takes over the section copy's entrance.
+  initChapters();
   initBackgrounds();
 
   document.querySelectorAll<HTMLElement>('[data-year]').forEach((el) => {

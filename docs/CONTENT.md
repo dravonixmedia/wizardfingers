@@ -179,6 +179,24 @@ Workers static assets are limited to 25 MiB per file.
   `opening.stages.*`. Stages crossfade as visitors scroll.
   A missing stage falls back to the studio backdrop.
 
+### Section transitions (Motion → Intelligence → Digital → About)
+
+With JavaScript on and motion allowed, `src/scripts/chapters.ts` moves the backgrounds of these
+consecutive sections into one full-screen frame that stays in place while the text scrolls over
+it (plain CSS `position: sticky`, native scrolling, no timers):
+
+- Each background eases in over the previous one as its section's top edge passes from 75% to
+  25% of the viewport, under a short charcoal veil (peak 45%) so the overlap never reads as a
+  muddy double image. Scrolling back reverses it exactly.
+- Each section's text rises in as it arrives and fades out as it leaves; focused content is
+  always fully shown.
+- Only the visible background's video plays; Pause/Play still works per section.
+- About joins only from 1024px wide (portrait beside the biography). Below that its stacked
+  portrait layout is kept and it follows the chapters as a normal section.
+- Only consecutive sections join: a published Experiments section between Digital and About
+  ends the run at Digital, and About keeps its own background.
+- Reduced motion or no JavaScript keep the static layout: every section with its own background.
+
 ### Focal points and text-safe areas
 
 - In the opening, the identity and headline sit in the **lower centre**. Frame
