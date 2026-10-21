@@ -85,7 +85,10 @@ export function initBackgrounds() {
       // Already playing (e.g. a stage change with the shared video): leave it alone.
       if (!v.paused) return;
       const p = v.play();
-      p?.catch(() => {
+      p?.catch((err: unknown) => {
+        // Interrupted by pause() because the section scrolled away first: not a failure, it
+        // plays again when visible (marking it failed would also hide a focused control).
+        if (err instanceof DOMException && err.name === 'AbortError') return;
         // Autoplay rejected or source failed: keep the poster.
         failed.add(v);
         v.classList.remove('is-playing');

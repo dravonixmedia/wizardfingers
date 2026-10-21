@@ -91,6 +91,59 @@ const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
   }
 
 
+  /* Portrait background: the biography stays on the left and the scrim fades out before
+     Pranav's face (right half), so the image's own low-key lighting is preserved. */
+  .about:not(.about--no-media) .about__scrim {
+    background: linear-gradient(90deg, rgb(10 10 11 / 0.85) 0%, rgb(10 10 11 / 0.6) 30%, rgb(10 10 11 / 0.2) 46%, transparent 54%);
+  }
+
+  .about:not(.about--no-media) .about__copy {
+    max-width: min(46rem, 50%);
+  }
+
+  /* Narrower screens: no room beside the face, so the portrait sits above the text at its
+     natural proportions and fades into the page. */
+  @media (max-width: 1023px) {
+    .about:not(.about--no-media) {
+      flex-direction: column;
+      min-height: 0;
+    }
+    .about:not(.about--no-media) > :global(.bg) {
+      position: relative;
+      inset: auto;
+      flex: none;
+      aspect-ratio: 1672 / 941;
+      /* The scroll parallax (≥ 900px) would shift the stacked portrait over the text. */
+      transform: none !important;
+    }
+    .about:not(.about--no-media) > :global(.bg)::after {
+      content: '';
+      position: absolute;
+      inset: auto 0 0;
+      height: 30%;
+      background: linear-gradient(to top, var(--c-black), transparent);
+    }
+    .about:not(.about--no-media) .about__scrim {
+      display: none;
+    }
+    .about:not(.about--no-media) .about__inner {
+      margin-top: -40px;
+      padding-top: 0;
+    }
+    .about:not(.about--no-media) .about__copy {
+      max-width: 46rem;
+    }
+  }
+
+  @media (max-width: 720px) {
+    /* Phones use the portrait crop (backgrounds.ts → mobileSrc). */
+    .about:not(.about--no-media) > :global(.bg) {
+      aspect-ratio: 820 / 941;
+      max-height: 72svh;
+      width: 100%;
+    }
+  }
+
   @media (max-width: 720px) {
     .about__scrim {
       background: linear-gradient(0deg, rgb(10 10 11 / 0.9) 0%, rgb(10 10 11 / 0.5) 55%, rgb(10 10 11 / 0.2));
