@@ -114,6 +114,12 @@ const links = linkProjectsFor(feature.id);
   .feature--top-left .feature__scrim {
     background: linear-gradient(160deg, rgb(10 10 11 / 0.85) 0%, rgb(10 10 11 / 0.35) 45%, transparent 70%);
   }
+  /* Busy media (e.g. a website recording) behind the copy: also darken the whole text column. */
+  .feature--top-left:not(.feature--no-media) .feature__scrim {
+    background:
+      linear-gradient(90deg, rgb(10 10 11 / 0.72) 0%, rgb(10 10 11 / 0.6) 40%, rgb(10 10 11 / 0.15) 62%, transparent 75%),
+      linear-gradient(160deg, rgb(10 10 11 / 0.6) 0%, transparent 45%);
+  }
 
   .feature__inner {
     position: relative;

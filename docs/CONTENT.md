@@ -112,6 +112,26 @@ When replacing the hero video: put the new master in `media-source/backgrounds/`
 (e.g. `hero-loop-v2-1080.mp4`) so browsers holding the old cached file can't pair it with the
 new poster. Don't animate the background's scale or position in entrance animations.
 
+### Digital section video (Timeless Knot)
+
+`sections.digital` plays a screen recording of the Timeless Knot website. The untouched
+recording is `media-source/backgrounds/timeless-knot-hero.mp4`; **`scripts/encode-timeless-knot.sh`**
+builds the web versions from it:
+
+| Output | Purpose |
+| --- | --- |
+| `public/media/backgrounds/timeless-knot-loop-1080.mp4` | desktop and tablet, 1920×920 (≈4.9 MB) |
+| `public/media/backgrounds/timeless-knot-loop-720.mp4` | phones, 720×920 portrait crop at full sharpness (≈1.8 MB) |
+| `src/media/backgrounds/timeless-knot-poster.jpg` / `-poster-mobile.jpg` | exact first frame of each encode |
+
+- **Crop** removes the recording's 80 px black bars; **trim** drops the first 1.2 s (site still
+  loading) and the static tail where a sticky header jumps in.
+- **Loop**: the recording scrolls hero → footer, so the ends can never match. Instead of a
+  crossfade (which would ghost the footer over the hero) the footer dips to charcoal and the
+  hero fades back up from it: a clean 37.5 s loop.
+- Shown under a 0.7 overlay, with a stronger scrim behind the text column, so the CRF is higher
+  than the hero's. To change the phone framing, edit `MOBILE_X` in the script.
+
 Recommended video: 1920×1080 (mobile 1080×1920 or 720×1280), 6–15 s seamless loop,
 H.264 MP4 with `-movflags +faststart`, no audio track, ≤ 8 MB (mobile ≤ 3 MB).
 Workers static assets are limited to 25 MiB per file.

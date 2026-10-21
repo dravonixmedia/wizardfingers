@@ -50,7 +50,21 @@ export const backgrounds: {
   sections: {
     motion: undefined,
     intelligence: undefined,
-    digital: undefined,
+    // Screen recording of the Timeless Knot website (a real Digital project), scrolling from its
+    // hero to its footer. Source master (not deployed): media-source/backgrounds/timeless-knot-hero.mp4.
+    // Web versions are built by scripts/encode-timeless-knot.sh: loading frames trimmed, black
+    // bars cropped, the footer dips to charcoal and fades back to the hero for a clean 37.5 s loop.
+    // Phones get a 720×920 portrait crop of the same recording (the hero couple and headline).
+    digital: {
+      type: 'video',
+      src: '/media/backgrounds/timeless-knot-loop-1080.mp4',
+      mobileSrc: '/media/backgrounds/timeless-knot-loop-720.mp4',
+      poster: 'backgrounds/timeless-knot-poster.jpg',
+      mobilePoster: 'backgrounds/timeless-knot-poster-mobile.jpg',
+      position: '50% 50%',
+      mobilePosition: '50% 50%',
+      overlay: 0.7,
+    },
     about: undefined,
     contact: undefined,
   },
