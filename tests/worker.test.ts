@@ -43,3 +43,48 @@ test('missing pages keep their 404 status', async () => {
   assert.equal(res.status, 404);
   assert.equal(res.headers.get('Cache-Control'), null);
 });
+
+// --- Byte ranges for media (Safari video playback) ---------------------------
+
+const bytes = new Uint8Array(Array.from({ length: 100 }, (_, i) => i));
+const mediaEnv = {
+  ASSETS: {
+    async fetch(req: Request) {
+      const { pathname } = new URL(req.url);
+      if (pathname === '/media/backgrounds/hero.mp4') return new Response(bytes, { headers: { 'Content-Type': 'video/mp4' } });
+      return new Response('<h1>404</h1>', { status: 404, headers: { 'Content-Type': 'text/html' } });
+    },
+  },
+} as never;
+const media = (range?: string) =>
+  worker.fetch(new Request('https://wizardfingers.com/media/backgrounds/hero.mp4', { headers: range ? { Range: range } : {} }), mediaEnv);
+
+test('media without Range is served whole and advertises ranges', async () => {
+  const res = await media();
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('Accept-Ranges'), 'bytes');
+  assert.equal((await res.arrayBuffer()).byteLength, 100);
+});
+
+test('media Range request returns 206 with the requested bytes', async () => {
+  const res = await media('bytes=10-19');
+  assert.equal(res.status, 206);
+  assert.equal(res.headers.get('Content-Range'), 'bytes 10-19/100');
+  assert.equal(res.headers.get('Content-Length'), '10');
+  assert.equal(res.headers.get('Content-Type'), 'video/mp4');
+  assert.deepEqual([...new Uint8Array(await res.arrayBuffer())], [10, 11, 12, 13, 14, 15, 16, 17, 18, 19]);
+});
+
+test('open-ended and suffix ranges', async () => {
+  const open = await media('bytes=95-');
+  assert.equal(open.headers.get('Content-Range'), 'bytes 95-99/100');
+  const suffix = await media('bytes=-5');
+  assert.equal(suffix.headers.get('Content-Range'), 'bytes 95-99/100');
+  assert.equal((await suffix.arrayBuffer()).byteLength, 5);
+});
+
+test('unsatisfiable range returns 416', async () => {
+  const res = await media('bytes=200-300');
+  assert.equal(res.status, 416);
+  assert.equal(res.headers.get('Content-Range'), 'bytes */100');
+});

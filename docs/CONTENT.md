@@ -81,6 +81,20 @@ the opening, only for the active stage), and a visible **Pause/Play** control
 appears. Phones play the video only when `mobileSrc` is set, otherwise they show
 the poster. Reduced motion, Data Saver and blocked autoplay also show the poster.
 
+**Use H.264 MP4, not HEVC/H.265.** Firefox and many Chrome installs cannot decode HEVC
+(especially 10-bit "Main 10"), so those visitors would only see the poster. The current hero
+was delivered as HEVC (`public/media/backgrounds/hero.mp4`, kept as the master); the site serves
+H.264 encodes made from it:
+
+```sh
+ffmpeg -i hero.mp4 -an -c:v libx264 -preset slow -crf 21 -profile:v high -pix_fmt yuv420p \
+  -r 24 -g 48 -movflags +faststart public/media/backgrounds/hero-1080.mp4
+ffmpeg -i hero.mp4 -an -vf scale=1280:720 -c:v libx264 -preset slow -crf 23 -profile:v high \
+  -pix_fmt yuv420p -r 24 -g 48 -movflags +faststart public/media/backgrounds/hero-720.mp4
+```
+
+The poster (`src/media/backgrounds/hero-poster.jpg`) is the sharpest frame (≈ 2.0 s) of the video.
+
 Recommended video: 1920×1080 (mobile 1080×1920 or 720×1280), 6–15 s seamless loop,
 H.264 MP4 with `-movflags +faststart`, no audio track, ≤ 8 MB (mobile ≤ 3 MB).
 Workers static assets are limited to 25 MiB per file.

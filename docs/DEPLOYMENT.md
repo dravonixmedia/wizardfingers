@@ -14,7 +14,7 @@ The site is a static Astro build served by the **existing** Worker
 | Setting | Why |
 | --- | --- |
 | `name: "wizardfingers"` | Targets the existing Worker. |
-| `main: "worker/index.ts"` | Small Worker that redirects `www` → apex and adds security/cache headers, then serves files from the assets binding. |
+| `main: "worker/index.ts"` | Small Worker that redirects `www` → apex, adds security/cache headers and answers byte-range requests for `/media/*` with `206 Partial Content` (Safari needs this to play MP4 video), then serves files from the assets binding. |
 | `assets.directory: "./dist"` | Astro's static output. |
 | `assets.not_found_handling: "404-page"` | Unknown URLs get `dist/404.html` with a real **404** status. |
 | `assets.html_handling: "auto-trailing-slash"` | `/work/slug` → `/work/slug/`, matching canonical URLs. |

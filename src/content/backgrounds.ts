@@ -26,7 +26,20 @@ export const backgrounds: {
   sections: Partial<Record<Dimension | 'about' | 'contact', BackgroundMedia>>;
 } = {
   opening: {
-    shared: undefined,
+    // Profile portrait of Pranav, shared by all three stages (one continuous video).
+    // Source master: public/media/backgrounds/hero.mp4 (HEVC 10-bit, 1920×1080, 10 s).
+    // Served as H.264 encodes made from it, because many browsers cannot decode HEVC.
+    // The face sits right of centre, in the top ~40% of the frame; the lower-centre text
+    // area falls on the dark shirt and backdrop.
+    shared: {
+      type: 'video',
+      src: '/media/backgrounds/hero-1080.mp4',
+      mobileSrc: '/media/backgrounds/hero-720.mp4',
+      poster: 'backgrounds/hero-poster.jpg',
+      position: '60% 8%',
+      mobilePosition: '62% 0%',
+      overlay: 0.3,
+    },
     stages: {
       motion: undefined,
       intelligence: undefined,

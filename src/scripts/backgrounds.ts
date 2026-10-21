@@ -66,6 +66,7 @@ export function initBackgrounds() {
         // Autoplay rejected or source failed: keep the poster.
         failed.add(v);
         v.classList.remove('is-playing');
+        renderToggles();
       });
     } else if (!v.paused) {
       v.pause();
@@ -79,6 +80,7 @@ export function initBackgrounds() {
     v.addEventListener('error', () => {
       failed.add(v);
       v.classList.remove('is-playing');
+      renderToggles();
     });
   });
 
@@ -103,7 +105,7 @@ export function initBackgrounds() {
     toggles.forEach((t) => {
       const scope = t.closest('section') ?? document;
       const own = Array.from(scope.querySelectorAll<HTMLVideoElement>('video[data-bg-video]'));
-      t.hidden = !canPlay || !own.some((v) => sourceFor(v));
+      t.hidden = !canPlay || !own.some((v) => sourceFor(v) && !failed.has(v));
       const label = t.querySelector('[data-bg-toggle-label]');
       if (label) label.textContent = paused ? 'Play' : 'Pause';
     });
