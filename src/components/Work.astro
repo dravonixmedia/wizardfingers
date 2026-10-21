@@ -1,18 +1,20 @@
 ---
 import ProjectCard from './ProjectCard.astro';
-import { dimensionLabels, publishedProjects, work } from '../content';
+import { dimensionLabels, publishedProjects, work, workLinkProjects } from '../content';
 
 const LAYOUTS = ['wide', 'left', 'right', 'narrow', 'offset'];
 const filters = [{ id: 'all', label: 'All' }, ...Object.entries(dimensionLabels).map(([id, label]) => ({ id, label }))];
-const counts: Record<string, number> = { all: publishedProjects.length };
-for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0) + 1;
+const items = [...publishedProjects, ...workLinkProjects];
+const counts: Record<string, number> = { all: items.length };
+for (const p of items) counts[p.category] = (counts[p.category] ?? 0) + 1;
+const domain = (url: string) => new URL(url).hostname.replace(/^www\./, '');
 ---
 
-<section class:list={['work', publishedProjects.length === 0 && 'work--empty']} id="work" aria-labelledby="work-title" data-work>
+<section class:list={['work', items.length === 0 && 'work--empty']} id="work" aria-labelledby="work-title" data-work>
   <div class="wrap">
     <div class="work__head" data-reveal>
       <h2 id="work-title" class="work__title display">{work.headline}</h2>
-      {publishedProjects.length > 0 ? (
+      {items.length > 0 ? (
         <p class="work__intro">{work.intro}</p>
       ) : (
         <div class="work__empty">
@@ -23,7 +25,7 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
     </div>
 
     {
-      publishedProjects.length > 0 && (
+      items.length > 0 && (
         <>
           <div class="work__filters" role="group" aria-label="Filter projects by dimension" data-filters>
             {filters.map((f, i) => (
@@ -41,11 +43,28 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
             ))}
           </div>
           <p class="sr-only" aria-live="polite" data-filter-status />
-          <ol class="work__grid" data-work-grid>
-            {publishedProjects.map((project, i) => (
-              <ProjectCard project={project} index={i} layout={LAYOUTS[i % LAYOUTS.length]} />
-            ))}
-          </ol>
+          {publishedProjects.length > 0 && (
+            <ol class="work__grid" data-work-grid>
+              {publishedProjects.map((project, i) => (
+                <ProjectCard project={project} index={i} layout={LAYOUTS[i % LAYOUTS.length]} />
+              ))}
+            </ol>
+          )}
+          {workLinkProjects.length > 0 && (
+            <ul class="work__links" aria-label="Development work">
+              {workLinkProjects.map((l) => (
+                <li class="work__link-row" data-card data-category={l.category}>
+                  <h3 class="work__link-title">{l.title}</h3>
+                  <p class="work__link-domain">{domain(l.url)}</p>
+                  <p class="work__link-label label">{l.workLabel}</p>
+                  <a class="work__link label" href={l.url} target="_blank" rel="noopener noreferrer">
+                    {l.label} <span aria-hidden="true">↗</span>
+                    <span class="sr-only">: {l.title} (opens in a new tab)</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
         </>
       )
     }
@@ -157,6 +176,105 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: clamp(56px, 7vw, 112px) var(--gutter);
+  }
+
+  .work__grid + .work__links {
+    margin-top: clamp(56px, 7vw, 112px);
+  }
+
+  /* Link-only projects: a compact list — name, domain, label and an external link. */
+  .work__links {
+    border-top: 1px solid var(--c-line-strong);
+  }
+
+  .work__link-row {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr) minmax(0, 2fr) auto;
+    align-items: center;
+    gap: 8px var(--gutter);
+    min-height: 76px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--c-line-strong);
+  }
+
+  .work__link-row[hidden] {
+    display: none;
+  }
+
+  .work__link-title {
+    font-size: clamp(1.125rem, 1rem + 0.45vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  .work__link-domain {
+    color: var(--c-gray);
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+
+  .work__link-label {
+    color: rgb(242 240 234 / 0.7);
+  }
+
+  .work__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    color: var(--c-ivory);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color var(--t-fast),
+      border-color var(--t-fast),
+      color var(--t-fast);
+  }
+
+  .work__link:hover {
+    background: var(--c-ivory);
+    border-color: var(--c-ivory);
+    color: var(--c-black);
+  }
+
+  .work__link:focus-visible {
+    outline: 2px solid var(--c-blue);
+    outline-offset: 3px;
+    border-color: var(--c-ivory);
+  }
+
+  @media (max-width: 900px) {
+    /* Name and domain get the full width (no mid-word breaks); label and link share the last line. */
+    .work__link-row {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'title title'
+        'domain domain'
+        'label link';
+      gap: 2px 16px;
+      padding: 16px 0;
+    }
+    .work__link-title {
+      grid-area: title;
+    }
+    .work__link-domain {
+      grid-area: domain;
+      overflow-wrap: normal;
+    }
+    .work__link-label {
+      grid-area: label;
+      align-self: center;
+      margin-top: 8px;
+    }
+    .work__link {
+      grid-area: link;
+      margin-top: 8px;
+      padding: 0 14px;
+    }
   }
 
   @media (max-width: 900px) {
