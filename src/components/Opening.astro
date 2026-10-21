@@ -387,8 +387,9 @@ const pad = (n: number) => String(n).padStart(2, '0');
     transform: translateY(-0.3rem);
   }
 
+  /* Small enough that an outgoing supporting line never reaches the controls below. */
   :global(html.opening-pinned) .stage.is-after .stage__supporting {
-    transform: translateY(0.9rem);
+    transform: translateY(0.3rem);
   }
 
   /* The headline moves less than the gaps around it, so an outgoing or incoming headline never
@@ -418,9 +419,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
     display: inline-flex;
   }
 
-  /* Comfortable, responsive gap between the text group and the controls. */
+  /* Gap between the text group and the controls. 24px lower than the original 5svh spacing on
+     desktop; never less than 16px, so phones and short screens shift less. */
   :global(html.opening-pinned) .opening__bar {
-    padding-top: clamp(30px, 5svh, 52px);
+    padding-top: clamp(16px, calc(5svh - 24px), 28px);
   }
 
   /* Short landscape screens (e.g. 1366×600): a slightly lower cap keeps the face clear. */
