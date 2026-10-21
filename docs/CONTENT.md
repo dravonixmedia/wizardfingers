@@ -132,6 +132,28 @@ builds the web versions from it:
 - Shown under a 0.7 overlay, with a stronger scrim behind the text column, so the CRF is higher
   than the hero's. To change the phone framing, edit `MOBILE_X` in the script.
 
+### Section videos (Motion and Intelligence)
+
+`sections.motion` and `sections.intelligence` play short films built by
+**`scripts/encode-section-backgrounds.sh`** from the untouched masters
+`media-source/backgrounds/motion-hero.mp4` and `media-source/backgrounds/Intelligence-hero.mp4`:
+
+| Output | Purpose |
+| --- | --- |
+| `public/media/backgrounds/motion-loop-720p.mp4` | desktop and tablet, 1280×720 (the master's resolution, ≈5.1 MB) |
+| `public/media/backgrounds/motion-loop-mobile.mp4` | phones, 576×720 portrait crop (≈2.2 MB) |
+| `public/media/backgrounds/intelligence-loop-1080.mp4` | desktop and tablet, 1920×1080 (≈5.1 MB) |
+| `public/media/backgrounds/intelligence-loop-720.mp4` | phones, 720×900 portrait crop (≈1.4 MB) |
+| `src/media/backgrounds/{motion,intelligence}-poster.jpg` / `-poster-mobile.jpg` | exact first frame of each encode |
+
+- **Audio** is removed. **Trim**: Intelligence drops a 0.36 s fade-up at the start. Motion drops
+  the black frames, title card and flash transitions at the start, and the fade to black and
+  black-and-white outro at the end.
+- **Motion length**: a 29 s excerpt of the colour footage (the full 62 s was 8–15 MB). It starts on
+  the couple's close-up so the poster is recognisable; raise `B` in the script to use more.
+- **Loop**: both are edited films that cut every few seconds, so each loop restarts on a clean cut.
+- Overlays: Motion 0.5 (text bottom-left), Intelligence 0.6 (bright footage, text on the right).
+
 Recommended video: 1920×1080 (mobile 1080×1920 or 720×1280), 6–15 s seamless loop,
 H.264 MP4 with `-movflags +faststart`, no audio track, ≤ 8 MB (mobile ≤ 3 MB).
 Workers static assets are limited to 25 MiB per file.
