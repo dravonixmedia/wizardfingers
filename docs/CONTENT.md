@@ -7,11 +7,13 @@ missing images or missing alt text never reach the live site.
 
 | What | Where |
 | --- | --- |
-| Biography, hero copy, expertise, contact, portrait, showreel | `src/content/site.ts` |
+| Opening stages, section copy, About, contact, showreel | `src/content/site.ts` |
 | Projects | `src/content/projects.ts` |
 | Experiments | `src/content/experiments.ts` |
 | Images (optimised automatically) | `src/media/…` |
 | Videos and other large files (served as-is) | `public/media/…` |
+
+| Background images/videos (opening + sections) | `src/content/backgrounds.ts` |
 
 Image paths in content are **relative to `src/media/`** (e.g. `projects/night-signal/cover.jpg`).
 Video paths are **absolute public paths** (e.g. `/media/projects/night-signal/preview.mp4`).
@@ -20,33 +22,92 @@ Run `npm run dev` while editing — the page reloads on save.
 
 ---
 
-## Add the portrait
+## Background media (opening stages and sections)
 
-1. Put a high-resolution photo (at least 2000 px tall, JPG/PNG/WebP) in
-   `src/media/portrait/`, e.g. `src/media/portrait/pranav.jpg`.
-   The site renders it in monochrome; supply the original colour file.
-2. In `src/content/site.ts` set:
+All background images and videos are configured in **`src/content/backgrounds.ts`**.
+Every slot is optional. Until a slot is filled, the site shows a neutral charcoal
+"studio" backdrop, never a broken or empty frame.
 
-   ```ts
-   portrait: {
-     src: 'portrait/pranav.jpg',
-     alt: 'Black-and-white portrait of Pranav',
-     focal: { x: 50, y: 35 },      // where the face is, in % from top-left
-   },
-   ```
+| Slot | Where it appears |
+| --- | --- |
+| `opening.shared` | One background behind all three opening stages (overrides `opening.stages`) |
+| `opening.stages.motion` / `.intelligence` / `.digital` | A different background per opening stage |
+| `sections.motion` / `.intelligence` / `.digital` | Behind the three discipline sections |
+| `sections.about` | Behind About (e.g. a genuine portrait of Pranav) |
+| `sections.contact` | Behind Contact |
 
-3. Optional, for layered depth: a transparent PNG/WebP cut-out of just the
-   subject, **exactly the same size and framing** as the photo, e.g.
-   `portrait/pranav-cutout.png`, then add `cutout: 'portrait/pranav-cutout.png'`.
-   With a cut-out, the name sits between background and subject. Without one,
-   the layout keeps type clear of the face.
+### Where to upload
 
-The same portrait also appears in the About section. Without a portrait the
-hero stays typographic — nothing else needs to change.
+| File | Folder | How to reference it |
+| --- | --- | --- |
+| Images and video posters (JPG/PNG/WebP) | `src/media/backgrounds/` | relative to `src/media/` → `'backgrounds/motion.jpg'` |
+| Videos (MP4, H.264) | `public/media/backgrounds/` | public path → `'/media/backgrounds/motion.mp4'` |
+
+Suggested names: `opening-motion.jpg`, `opening-intelligence.mp4`, `opening-intelligence-poster.jpg`,
+`opening-digital.jpg`, `section-motion.mp4`, `section-motion-poster.jpg`, `about.jpg`, `contact.jpg`,
+plus `-mobile` variants where needed.
+
+### Image
+
+```ts
+motion: {
+  type: 'image',
+  src: 'backgrounds/opening-motion.jpg',          // ≥ 2560 px wide, landscape
+  mobileSrc: 'backgrounds/opening-motion-mobile.jpg', // optional portrait crop for phones
+  position: '50% 30%',        // desktop focal point (object-position)
+  mobilePosition: '62% 25%',  // optional phone focal point
+  overlay: 0.45,              // 0 = no darkening … 1 = black. Default 0.45
+  alt: '',                    // describe only if the image carries meaning
+},
+```
+
+### Video
+
+```ts
+intelligence: {
+  type: 'video',
+  src: '/media/backgrounds/opening-intelligence.mp4',
+  mobileSrc: '/media/backgrounds/opening-intelligence-mobile.mp4', // optional
+  poster: 'backgrounds/opening-intelligence-poster.jpg',           // required
+  mobilePoster: 'backgrounds/opening-intelligence-poster-mobile.jpg', // optional
+  position: '50% 40%',
+  overlay: 0.5,
+},
+```
+
+Video behaviour: always muted, looping and inline, never with sound. Nothing
+downloads until the video is about to be shown. It plays only while visible (in
+the opening, only for the active stage), and a visible **Pause/Play** control
+appears. Phones play the video only when `mobileSrc` is set, otherwise they show
+the poster. Reduced motion, Data Saver and blocked autoplay also show the poster.
+
+Recommended video: 1920×1080 (mobile 1080×1920 or 720×1280), 6–15 s seamless loop,
+H.264 MP4 with `-movflags +faststart`, no audio track, ≤ 8 MB (mobile ≤ 3 MB).
+Workers static assets are limited to 25 MiB per file.
+
+### Shared vs separate opening backgrounds
+
+- **One shared background**: set `opening.shared` and leave the stages empty.
+  Only the headline and supporting line change while scrolling.
+- **Separate backgrounds**: leave `opening.shared` as `undefined` and fill
+  `opening.stages.*`. Stages crossfade as visitors scroll.
+  A missing stage falls back to the studio backdrop.
+
+### Focal points and text-safe areas
+
+- In the opening, the identity and headline sit in the **lower centre**. Frame
+  subjects so faces are in the **upper half** (e.g. `position: '50% 25%'`).
+- Motion section text sits **bottom-left**, Intelligence **right**, Digital
+  **top-left**, About **left**. Keep faces and important detail away from those areas,
+  or move them with `position`.
+- Raise `overlay` if the headline loses contrast on a bright image.
+
+Use only genuine photography or footage. Do not use stock people or generated
+likenesses of Pranav.
 
 ## Add a showreel
 
-The **Watch Showreel** button appears only when a showreel is configured.
+A **Showreel** button appears in the opening's control bar only when a showreel is configured.
 In `src/content/site.ts`:
 
 ```ts
@@ -109,9 +170,8 @@ Notes:
 
 - `order`: lower numbers come first in **Selected Work** and in "Next project" links.
   Leave gaps (10, 20, 30…) so you can insert work later.
-- `featured: true`: the first featured project in each dimension (by `order`) is the
-  preview shown in the hero's **Motion / Intelligence / Digital** selector. If none is
-  featured, the first project in that dimension is used.
+- `featured: true`: featured projects are listed first (up to three) in their discipline
+  section (Motion / Intelligence / Digital), with a link that filters Selected Work.
 - The editorial layout (wide, offset, portrait crops…) is assigned automatically from
   the order, so reordering also changes each project's composition.
 
@@ -142,9 +202,15 @@ domain) are rejected by validation rather than rendered as broken links. With no
 contact details the section shows a neutral note and no buttons. Configured
 social profiles are also added to the Person structured data (`sameAs`).
 
+## Hide a project
+
+Set `published: false`. The project disappears from the homepage, its page, the sitemap
+and the discipline sections; nothing else needs changing.
+
 ## Biography and other copy
 
-Hero, About, Expertise, Contact and section copy are in `src/content/site.ts`.
+Opening stages (`opening`), discipline sections (`features`), Work, About and Contact
+copy are in `src/content/site.ts`. The navigation is `navigation` in the same file.
 The default sharing image is `public/og/default.png` (1200×630); regenerate it with
 `node scripts/generate-brand-assets.mjs` after changing the brand, or replace the file.
 Each project page uses its own cover as its sharing image.

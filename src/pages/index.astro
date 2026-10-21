@@ -1,23 +1,25 @@
 ---
 import Base from '../layouts/Base.astro';
-import Hero from '../components/Hero.astro';
+import Opening from '../components/Opening.astro';
 import Work from '../components/Work.astro';
-import About from '../components/About.astro';
-import FrameToInterface from '../components/FrameToInterface.astro';
-import Expertise from '../components/Expertise.astro';
+import FeatureSection from '../components/FeatureSection.astro';
 import Experiments from '../components/Experiments.astro';
+import About from '../components/About.astro';
 import Contact from '../components/Contact.astro';
 import ShowreelDialog from '../components/ShowreelDialog.astro';
+import { features } from '../content';
 import { siteJsonLd } from '../lib/seo';
+
+// Alternate the text-safe area so copy never sits on the same focal region twice in a row.
+const layouts = ['bottom-left', 'center-right', 'top-left'] as const;
 ---
 
-<Base path="/" linkBase="" jsonLd={siteJsonLd()}>
-  <Hero />
+<Base path="/" linkBase="" hasOpening jsonLd={siteJsonLd()}>
+  <Opening />
   <Work />
-  <About />
-  <FrameToInterface />
-  <Expertise />
+  {features.map((feature, i) => <FeatureSection feature={feature} layout={layouts[i % layouts.length]} />)}
   <Experiments />
+  <About />
   <Contact />
   <ShowreelDialog />
 </Base>

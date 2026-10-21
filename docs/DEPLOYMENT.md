@@ -93,7 +93,7 @@ If the Worker is connected to this GitHub repository
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` |
 | Non-production branch deploy command | `npx wrangler versions upload` (default) |
-| Production branch | the branch you choose to release from (e.g. `main`) |
+| Production branch | `main` (current setting) — merging to `main` deploys to production |
 
 Node version comes from `.node-version` (22.22.0). No secrets or environment
 variables are required.

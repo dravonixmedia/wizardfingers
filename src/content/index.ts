@@ -3,11 +3,13 @@ import { join } from 'node:path';
 import { experiments as allExperiments } from './experiments';
 import { projects as allProjects } from './projects';
 import { sampleExperiments, sampleProjects } from './samples';
+import { backgrounds } from './backgrounds';
 import { site } from './site';
-import type { ContactLinks, Dimension, Experiment, FilmSource, MediaImage, Project } from './types';
+import type { BackgroundMedia, ContactLinks, Dimension, Experiment, FilmSource, MediaImage, Project } from './types';
 import { imageExists } from '../lib/media';
 
 export * from './site';
+export { backgrounds } from './backgrounds';
 export type * from './types';
 
 /** Samples load only on the dev server with WF_SAMPLES=1. Never in builds. */
@@ -116,13 +118,33 @@ function validateExperiments(list: Experiment[]) {
   }
 }
 
-function validateSite() {
-  if (site.portrait) {
-    checkImage('site.portrait', { src: site.portrait.src, alt: site.portrait.alt, focal: site.portrait.focal }, true);
-    if (!site.portrait.alt.trim()) fail('site.portrait: alt text is required');
-    if (site.portrait.cutout && !imageExists(site.portrait.cutout)) fail('site.portrait.cutout: image not found');
+const POSITION = /^(?:-?\d+(?:\.\d+)?%|left|center|right|top|bottom)(?:\s+(?:-?\d+(?:\.\d+)?%|left|center|right|top|bottom))?$/;
+
+function checkBackground(where: string, m: BackgroundMedia | undefined) {
+  if (!m) return;
+  if (m.type === 'image') {
+    if (!imageExists(m.src)) fail(`${where}: image not found at src/media/${m.src}`);
+    if (m.mobileSrc && !imageExists(m.mobileSrc)) fail(`${where}: mobile image not found at src/media/${m.mobileSrc}`);
+  } else if (m.type === 'video') {
+    checkPublic(`${where} video`, m.src);
+    checkPublic(`${where} mobile video`, m.mobileSrc);
+    if (!m.poster) fail(`${where}: videos need a poster image`);
+    else if (!imageExists(m.poster)) fail(`${where}: poster not found at src/media/${m.poster}`);
+    if (m.mobilePoster && !imageExists(m.mobilePoster)) fail(`${where}: mobile poster not found at src/media/${m.mobilePoster}`);
+  } else {
+    fail(`${where}: type must be 'image' or 'video'`);
   }
+  for (const [k, v] of [['position', m.position], ['mobilePosition', m.mobilePosition]] as const) {
+    if (v !== undefined && !POSITION.test(v.trim())) fail(`${where}: ${k} must look like '50% 30%'`);
+  }
+  if (m.overlay !== undefined && (m.overlay < 0 || m.overlay > 1)) fail(`${where}: overlay must be between 0 and 1`);
+}
+
+function validateSite() {
   if (site.showreel) checkFilm('site.showreel', site.showreel);
+  checkBackground('backgrounds.opening.shared', backgrounds.opening.shared);
+  for (const [k, v] of Object.entries(backgrounds.opening.stages)) checkBackground(`backgrounds.opening.stages.${k}`, v);
+  for (const [k, v] of Object.entries(backgrounds.sections)) checkBackground(`backgrounds.sections.${k}`, v);
 }
 
 const sourceProjects = samplesEnabled ? [...allProjects, ...sampleProjects] : allProjects;
@@ -165,10 +187,10 @@ export function nextProject(slug: string) {
   return publishedProjects[(i + 1) % publishedProjects.length];
 }
 
-/** The project previewed for a dimension: featured first, then by order. */
-export function featuredFor(dimension: Dimension) {
+/** Published projects in a dimension, featured first, then by order. */
+export function projectsFor(dimension: Dimension) {
   const inDim = publishedProjects.filter((p) => p.category === dimension);
-  return inDim.find((p) => p.featured) ?? inDim[0];
+  return [...inDim.filter((p) => p.featured), ...inDim.filter((p) => !p.featured)];
 }
 
 // ---------------------------------------------------------------------------

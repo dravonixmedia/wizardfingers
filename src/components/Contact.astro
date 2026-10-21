@@ -1,30 +1,32 @@
 ---
-import { contact, contactDestinations } from '../content';
+import BackgroundMedia from './BackgroundMedia.astro';
+import { backgrounds, contact, contactDestinations } from '../content';
+
+const media = backgrounds.sections.contact;
 const words = contact.headline.split(' ');
 const last = words.pop();
+const hasLinks = contactDestinations.length > 0;
 ---
 
-<section class="section contact" id="contact" aria-labelledby="contact-title">
-  <div class="contact__glow" aria-hidden="true" data-parallax="-0.12"></div>
-  <div class="wrap">
-    <p class="label label--accent" data-reveal>{contact.label}</p>
-    <h2 id="contact-title" class="contact__title" data-reveal>
-      <span class="display">{words.join(' ')}</span>
-      <span class="serif">{last}</span>
-    </h2>
+<section class:list={['contact', !hasLinks && !media && 'contact--compact']} id="contact" aria-labelledby="contact-title">
+  <BackgroundMedia media={media} variant="contact" parallax />
+  <div class="wrap contact__inner">
+    <div class="contact__head" data-reveal>
+      <p class="label label--accent">{contact.label}</p>
+      <h2 id="contact-title" class="contact__title">
+        <span class="display">{words.join(' ')}</span>
+        <span class="serif">{last}</span>
+      </h2>
+    </div>
 
-    <div class="contact__body">
-      <p class="contact__intro" data-reveal>{contact.intro}</p>
-
-      {
-        contactDestinations.length > 0 ? (
-          <ul class="contact__links" data-reveal>
+    {
+      hasLinks ? (
+        <div class="contact__body" data-reveal>
+          <p class="contact__intro">{contact.intro}</p>
+          <ul class="contact__links">
             {contactDestinations.map((d) => (
               <li>
-                <a
-                  href={d.href}
-                  {...(d.external ? { target: '_blank', rel: 'noopener noreferrer me' } : {})}
-                >
+                <a href={d.href} {...(d.external ? { target: '_blank', rel: 'noopener noreferrer me' } : {})}>
                   <span class="label">{d.label}</span>
                   <span class="contact__value">{d.display}</span>
                   <span class="contact__arrow" aria-hidden="true">
@@ -35,75 +37,82 @@ const last = words.pop();
               </li>
             ))}
           </ul>
-        ) : (
-          <p class="contact__unavailable label" data-reveal>
-            {contact.unavailable}
-          </p>
-        )
-      }
-    </div>
+        </div>
+      ) : (
+        <p class="contact__unavailable label" data-reveal>
+          {contact.unavailable}
+        </p>
+      )
+    }
+    {
+      media?.type === 'video' && (
+        <button class="bg-toggle" type="button" data-bg-toggle hidden>
+          <span data-bg-toggle-label>Pause</span>
+          <span class="sr-only"> background video</span>
+        </button>
+      )
+    }
   </div>
 </section>
 
 <style>
   .contact {
     position: relative;
+    isolation: isolate;
     overflow: hidden;
-    padding-bottom: clamp(120px, 14vw, 220px);
   }
 
-  .contact__glow {
-    position: absolute;
-    left: 50%;
-    bottom: -40%;
-    width: 120vw;
-    height: 90%;
-    translate: -50% 0;
-    background: radial-gradient(50% 50% at 50% 50%, rgb(66 117 255 / 0.28), transparent 70%);
-    pointer-events: none;
+  .contact > :global(.bg) {
+    z-index: -1;
+  }
+
+  .contact__inner {
+    position: relative;
+    display: grid;
+    gap: clamp(32px, 4vw, 56px);
+    padding-block: clamp(80px, 10vw, 144px);
+  }
+
+  .contact--compact .contact__inner {
+    padding-block: clamp(64px, 8vw, 112px);
+  }
+
+  .contact__head {
+    display: grid;
+    gap: 20px;
   }
 
   .contact__title {
-    position: relative;
-    margin: 28px 0 clamp(48px, 6vw, 96px);
     font-weight: 400;
-    font-size: clamp(3.2rem, 1rem + 9vw, 11rem);
-    line-height: 0.88;
+    font-size: clamp(2.9rem, 1rem + 7vw, 8.5rem);
+    line-height: 0.9;
   }
 
   .contact__title .display {
     display: block;
-    max-width: 12ch;
   }
 
   .contact__title .serif {
     display: block;
-    text-align: right;
-    font-size: 1.12em;
-    color: var(--c-ivory);
+    font-size: 1.1em;
   }
 
   .contact__body {
-    position: relative;
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 32px var(--gutter);
+    gap: 24px var(--gutter);
   }
 
   .contact__intro {
     grid-column: 1 / span 4;
-    color: var(--c-gray);
+    color: rgb(242 240 234 / 0.82);
     font-size: var(--step-1);
     line-height: 1.4;
   }
 
-  .contact__links,
-  .contact__unavailable {
-    grid-column: 6 / -1;
-  }
-
   .contact__links {
-    border-top: 1px solid var(--c-line);
+    grid-column: 6 / -1;
+    border-top: 1px solid var(--c-line-strong);
   }
 
   .contact__links a {
@@ -111,11 +120,11 @@ const last = words.pop();
     grid-template-columns: 8rem 1fr auto;
     align-items: center;
     gap: 16px;
-    min-height: 72px;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--c-line);
+    min-height: 68px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--c-line-strong);
     text-decoration: none;
-    transition: padding var(--t-med) var(--ease-out), color var(--t-fast);
+    transition: padding var(--t-med) var(--ease-out);
   }
 
   .contact__value {
@@ -124,7 +133,7 @@ const last = words.pop();
   }
 
   .contact__arrow {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     transition: transform var(--t-med) var(--ease-out), color var(--t-fast);
   }
 
@@ -140,17 +149,13 @@ const last = words.pop();
   }
 
   .contact__unavailable {
-    align-self: start;
-    padding: 24px 0;
-    border-top: 1px solid var(--c-line);
-    border-bottom: 1px solid var(--c-line);
-    color: var(--c-ivory);
+    color: rgb(242 240 234 / 0.82);
   }
+
 
   @media (max-width: 900px) {
     .contact__intro,
-    .contact__links,
-    .contact__unavailable {
+    .contact__links {
       grid-column: 1 / -1;
     }
     .contact__links a {

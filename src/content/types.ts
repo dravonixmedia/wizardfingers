@@ -102,18 +102,6 @@ export interface Experiment {
 
 export type ShowreelSource = FilmSource;
 
-export interface Portrait {
-  /** Full photograph (path relative to `src/media/`). */
-  src: string;
-  alt: string;
-  focal?: FocalPoint;
-  /**
-   * Optional transparent PNG/WebP cut-out of the subject, aligned 1:1 with `src`.
-   * When present the hero places the name between photo and subject for depth.
-   */
-  cutout?: string;
-}
-
 export interface ContactLinks {
   email?: string;
   instagram?: string;
@@ -124,16 +112,53 @@ export interface ContactLinks {
   whatsapp?: string;
 }
 
-export interface DimensionCopy {
+/**
+ * Full-bleed background media used by the opening stages and the media-led
+ * sections. Images are paths relative to `src/media/` (optimised at build
+ * time); videos are public paths under `public/media/` (served as-is).
+ */
+export type BackgroundMedia =
+  | {
+      type: 'image';
+      /** Path relative to `src/media/`, e.g. `backgrounds/motion.jpg`. */
+      src: string;
+      /** Optional portrait-oriented crop for phones (≤ 720px wide). */
+      mobileSrc?: string;
+      /** Describe the image if it carries meaning; leave '' for purely atmospheric images. */
+      alt?: string;
+      /** CSS object-position for desktop, e.g. '50% 30%'. Default '50% 50%'. */
+      position?: string;
+      /** CSS object-position for phones. Defaults to `position`. */
+      mobilePosition?: string;
+      /** Darkening overlay strength, 0–1. Default 0.45. */
+      overlay?: number;
+    }
+  | {
+      type: 'video';
+      /** Public path, e.g. `/media/backgrounds/motion.mp4` (muted, looping, ≤ 10 MB recommended). */
+      src: string;
+      /** Optional lighter video for phones. Without it, phones show the poster only. */
+      mobileSrc?: string;
+      /** Required still (path relative to `src/media/`) shown before playback, on reduced motion and on failure. */
+      poster: string;
+      /** Optional phone-specific poster (path relative to `src/media/`). */
+      mobilePoster?: string;
+      position?: string;
+      mobilePosition?: string;
+      overlay?: number;
+    };
+
+export interface OpeningStage {
   id: Dimension;
-  label: string;
-  /** Short line under the label. */
-  disciplines: string;
-  description: string;
+  /** Large headline, e.g. 'Motion.' */
+  headline: string;
+  /** Supporting line, e.g. 'Filmmaking · Video Editing · Storytelling'. */
+  supporting: string;
 }
 
-export interface ExpertiseItem {
-  title: string;
-  description: string;
-  tags: string[];
+export interface FeatureCopy {
+  id: Dimension;
+  label: string;
+  headline: string;
+  copy: string;
 }

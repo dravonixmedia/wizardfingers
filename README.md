@@ -10,7 +10,7 @@ Live domain: <https://wizardfingers.com>
 | Layer | Choice |
 | --- | --- |
 | Site | [Astro](https://astro.build) 7, static output, TypeScript |
-| Motion | GSAP 3 + ScrollTrigger (loaded only when reduced motion is off) |
+| Motion | Native scroll + CSS `position: sticky` for the three-stage opening; GSAP 3 + ScrollTrigger for reveals/parallax (loaded only when reduced motion is off) |
 | Fonts | Self-hosted via Fontsource (all SIL OFL): Anton, Inter, JetBrains Mono, Instrument Serif |
 | Images | `astro:assets` → responsive AVIF/WebP with explicit dimensions |
 | Hosting | Cloudflare Workers Static Assets, Worker `wizardfingers` (`worker/index.ts`) |
@@ -47,14 +47,15 @@ node scripts/screenshots.mjs http://localhost:4321 screenshots / /work/<slug>/
 
 ```
 src/
-  content/        site.ts (copy, contact, portrait, showreel), projects.ts,
+  content/        site.ts (copy, navigation, opening stages, contact, showreel),
+                  backgrounds.ts (all background images/videos), projects.ts,
                   experiments.ts, samples.ts (dev only), types.ts, index.ts (validation)
-  media/          images optimised at build time (portrait/, projects/<slug>/, experiments/)
-  components/     Hero (+ dimension selector), Work, ProjectCard, About,
-                  FrameToInterface, Expertise, Experiments, Contact, FilmPlayer, ShowreelDialog…
+  media/          images optimised at build time (backgrounds/, projects/<slug>/, experiments/)
+  components/     Opening (pinned three-stage intro), BackgroundMedia, Work, ProjectCard,
+                  FeatureSection (Motion/Intelligence/Digital), About, Contact, FilmPlayer…
   pages/          index, work/[slug] (one page per published project), 404, sitemap.xml, robots.txt
-  scripts/        client-side behaviour (menu, selector, filters, media, motion)
-public/           favicons, og/default.png, media/ (videos — served as-is)
+  scripts/        client-side behaviour (opening, backgrounds, menu, filters, media, motion)
+public/           favicons, og/default.png, media/ (videos, incl. media/backgrounds/ — served as-is)
 worker/           Cloudflare Worker entry (redirect + headers) and helpers
 docs/             CONTENT.md, DEPLOYMENT.md
 ```
