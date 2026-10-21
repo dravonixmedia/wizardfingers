@@ -1,0 +1,80 @@
+---
+import { dimensionLabels, type Project } from '../content';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const meta = [
+  { k: 'Dimension', v: dimensionLabels[project.category] },
+  { k: 'Role', v: project.role },
+  ...(project.year ? [{ k: 'Year', v: String(project.year) }] : []),
+];
+const websiteLabel = project.website?.label ?? 'Visit website';
+---
+
+<div class="pj-intro" data-hero-in>
+  <p class="pj-intro__summary">{project.summary}</p>
+  <dl class="pj-intro__meta">
+    {
+      meta.map((m) => (
+        <div>
+          <dt class="label">{m.k}</dt>
+          <dd>{m.v}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  {
+    project.website && (
+      <a class="btn btn--solid pj-intro__site" href={project.website.url} target="_blank" rel="noopener noreferrer">
+        {websiteLabel} <span class="arrow" aria-hidden="true">↗</span>
+        <span class="sr-only">(opens in a new tab)</span>
+      </a>
+    )
+  }
+</div>
+
+<style>
+  .pj-intro {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 24px var(--gutter);
+    align-items: start;
+  }
+
+  .pj-intro__summary {
+    grid-column: 1 / span 6;
+    font-size: var(--step-2);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .pj-intro__meta {
+    grid-column: 8 / -1;
+    display: grid;
+    border-top: 1px solid var(--c-line);
+  }
+
+  .pj-intro__meta div {
+    display: grid;
+    grid-template-columns: 8rem 1fr;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .pj-intro__site {
+    grid-column: 8 / -1;
+    justify-self: start;
+  }
+
+  @media (max-width: 900px) {
+    .pj-intro__summary,
+    .pj-intro__meta,
+    .pj-intro__site {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

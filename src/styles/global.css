@@ -1,0 +1,409 @@
+/* ==========================================================================
+   Wizard Fingers — global tokens & base styles
+   ========================================================================== */
+
+:root {
+  --c-black: #0a0a0b;
+  --c-charcoal: #171719;
+  --c-ivory: #f2f0ea;
+  --c-gray: #a3a3aa;
+  --c-blue: #4275ff;
+  --c-blue-soft: rgb(66 117 255 / 0.18);
+  --c-line: rgb(242 240 234 / 0.14);
+  --c-line-strong: rgb(242 240 234 / 0.32);
+
+  --f-display: 'Anton', 'Impact', 'Haettenschweiler', 'Arial Narrow Bold', sans-serif-condensed, sans-serif;
+  --f-body: 'Inter Variable', 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --f-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --f-serif: 'Instrument Serif', 'Iowan Old Style', 'Times New Roman', serif;
+
+  --gutter: clamp(16px, 4.2vw, 64px);
+  --max: 1680px;
+  --header-h: 76px;
+  --radius: 2px;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --t-fast: 180ms;
+  --t-med: 420ms;
+
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.1rem + 0.5vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.25rem + 1.2vw, 2.25rem);
+  --step-3: clamp(2rem, 1.5rem + 2.4vw, 3.75rem);
+  --step-4: clamp(2.75rem, 1.6rem + 5.5vw, 7.5rem);
+  --step-5: clamp(3.5rem, 1.5rem + 10vw, 13rem);
+
+  color-scheme: dark;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --header-h: 64px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+  background: var(--c-black);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--c-black);
+  color: var(--c-ivory);
+  font-family: var(--f-body);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+img,
+video,
+iframe,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+a {
+  color: inherit;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+::selection {
+  background: var(--c-blue);
+  color: var(--c-ivory);
+}
+
+/* Focus ------------------------------------------------------------------ */
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--c-blue);
+  outline-offset: 4px;
+  border-radius: var(--radius);
+}
+
+/* Anchor targets clear the fixed header via html { scroll-padding-top }. */
+
+/* Utilities --------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  left: var(--gutter);
+  top: 12px;
+  z-index: 1000;
+  padding: 12px 18px;
+  background: var(--c-ivory);
+  color: var(--c-black);
+  font-family: var(--f-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform var(--t-fast) var(--ease-out);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--max);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.label {
+  font-family: var(--f-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--c-gray);
+}
+
+.label--accent::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 0.8em;
+  vertical-align: 0.12em;
+  background: var(--c-blue);
+  border-radius: 50%;
+  box-shadow: 0 0 12px var(--c-blue);
+}
+
+.display {
+  font-family: var(--f-display);
+  font-weight: 400;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+}
+
+.serif {
+  font-family: var(--f-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.rule {
+  height: 1px;
+  border: 0;
+  margin: 0;
+  background: var(--c-line);
+}
+
+.section {
+  position: relative;
+  padding-block: clamp(80px, 10vw, 150px);
+}
+
+.section-head {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 24px var(--gutter);
+  align-items: end;
+  padding-bottom: clamp(32px, 5vw, 72px);
+  border-bottom: 1px solid var(--c-line);
+  margin-bottom: clamp(40px, 6vw, 96px);
+}
+
+.section-head .label {
+  grid-column: 1 / -1;
+}
+
+.section-head h2 {
+  grid-column: 1 / span 8;
+  font-size: var(--step-4);
+}
+
+.section-head p {
+  grid-column: 9 / -1;
+  color: var(--c-gray);
+  max-width: 38ch;
+}
+
+@media (max-width: 900px) {
+  .section-head h2,
+  .section-head p {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Buttons ----------------------------------------------------------------- */
+
+.btn {
+  --btn-bg: transparent;
+  --btn-fg: var(--c-ivory);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9em;
+  min-height: 48px;
+  padding: 0 1.4em;
+  border: 1px solid var(--c-line-strong);
+  border-radius: 999px;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--f-mono);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  transition:
+    color var(--t-med) var(--ease-out),
+    border-color var(--t-med) var(--ease-out);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--c-ivory);
+  transform: translateY(101%);
+  transition: transform var(--t-med) var(--ease-out);
+}
+
+.btn:hover,
+.btn:focus-visible {
+  color: var(--c-black);
+  border-color: var(--c-ivory);
+}
+
+.btn:hover::before,
+.btn:focus-visible::before {
+  transform: none;
+}
+
+.btn--solid {
+  --btn-bg: var(--c-ivory);
+  --btn-fg: var(--c-black);
+  border-color: var(--c-ivory);
+}
+
+.btn--solid::before {
+  background: var(--c-blue);
+}
+
+.btn--solid:hover,
+.btn--solid:focus-visible {
+  color: var(--c-ivory);
+  border-color: var(--c-blue);
+}
+
+.btn .arrow {
+  display: inline-block;
+  transition: transform var(--t-med) var(--ease-out);
+}
+
+.btn:hover .arrow,
+.btn:focus-visible .arrow {
+  transform: translateX(4px);
+}
+
+.link-line {
+  position: relative;
+  text-decoration: none;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0% 1px no-repeat;
+  transition: background-size var(--t-med) var(--ease-out);
+}
+
+.link-line:hover,
+.link-line:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* Grain overlay ----------------------------------------------------------- */
+
+.grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.09;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Media fallbacks --------------------------------------------------------- */
+
+.media-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  background:
+    radial-gradient(circle at 70% 30%, var(--c-blue-soft), transparent 55%),
+    var(--c-charcoal);
+  color: var(--c-gray);
+}
+
+/* Motion: reveal hooks (only hidden while JS motion is active) ------------- */
+
+html.motion [data-hero-in] {
+  opacity: 0;
+}
+
+/* Cross-document view transitions (progressive enhancement) --------------- */
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 420ms;
+  animation-timing-function: var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

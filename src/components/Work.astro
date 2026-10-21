@@ -1,0 +1,169 @@
+---
+import ProjectCard from './ProjectCard.astro';
+import { dimensions, publishedProjects, work } from '../content';
+
+const LAYOUTS = ['wide', 'left', 'right', 'narrow', 'offset'];
+const filters = [{ id: 'all', label: 'All' }, ...dimensions.map((d) => ({ id: d.id, label: d.label }))];
+const counts: Record<string, number> = { all: publishedProjects.length };
+for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0) + 1;
+---
+
+<section class="section work" id="work" aria-labelledby="work-title" data-work>
+  <div class="wrap">
+    <div class="section-head" data-reveal>
+      <p class="label label--accent">{work.label}</p>
+      <h2 id="work-title" class="display">{work.headline}</h2>
+      <p>{work.intro}</p>
+    </div>
+
+    {
+      publishedProjects.length > 0 ? (
+        <>
+          <div class="work__filters" role="group" aria-label="Filter projects by dimension" data-filters>
+            {filters.map((f, i) => (
+              <button
+                type="button"
+                class="work__filter"
+                aria-pressed={i === 0 ? 'true' : 'false'}
+                data-filter={f.id}
+                disabled={!counts[f.id]}
+              >
+                {f.label}
+                <sup aria-hidden="true">{counts[f.id] ?? 0}</sup>
+                <span class="sr-only">({counts[f.id] ?? 0} projects)</span>
+              </button>
+            ))}
+          </div>
+          <p class="sr-only" aria-live="polite" data-filter-status />
+          <ol class="work__grid" data-work-grid>
+            {publishedProjects.map((project, i) => (
+              <ProjectCard project={project} index={i} layout={LAYOUTS[i % LAYOUTS.length]} />
+            ))}
+          </ol>
+        </>
+      ) : (
+        <div class="work__empty" data-reveal>
+          <div class="work__empty-frame" aria-hidden="true">
+            <span class="label">Scene 01 · Take 01</span>
+            <span class="work__empty-tc label">00:00:00:00</span>
+          </div>
+          <div class="work__empty-copy">
+            <p class="work__empty-title serif">{work.emptyTitle}</p>
+            <p class="work__empty-text">{work.emptyText}</p>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .work__filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: clamp(40px, 6vw, 80px);
+  }
+
+  .work__filter {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 4px;
+    min-height: 44px;
+    padding: 0 18px;
+    align-items: center;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    background: transparent;
+    cursor: pointer;
+    font-family: var(--f-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition:
+      background-color var(--t-fast),
+      color var(--t-fast),
+      border-color var(--t-fast);
+  }
+
+  .work__filter sup {
+    font-size: 0.62rem;
+    color: var(--c-gray);
+    transform: translateY(-0.4em);
+  }
+
+  .work__filter:hover:not(:disabled) {
+    border-color: var(--c-ivory);
+  }
+
+  .work__filter[aria-pressed='true'] {
+    background: var(--c-ivory);
+    color: var(--c-black);
+    border-color: var(--c-ivory);
+  }
+
+  .work__filter[aria-pressed='true'] sup {
+    color: var(--c-blue);
+  }
+
+  .work__filter:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .work__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(64px, 9vw, 140px) var(--gutter);
+  }
+
+  /* Empty state */
+  .work__empty {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 32px var(--gutter);
+    align-items: center;
+  }
+
+  .work__empty-frame {
+    grid-column: 1 / span 7;
+    position: relative;
+    aspect-ratio: 2.39 / 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 20px;
+    border: 1px solid var(--c-line);
+    background:
+      linear-gradient(90deg, transparent 33.2%, var(--c-line) 33.3%, transparent 33.4%, transparent 66.6%, var(--c-line) 66.7%, transparent 66.8%),
+      linear-gradient(transparent 33.2%, var(--c-line) 33.3%, transparent 33.4%, transparent 66.6%, var(--c-line) 66.7%, transparent 66.8%),
+      radial-gradient(60% 80% at 70% 40%, rgb(66 117 255 / 0.16), transparent 70%),
+      var(--c-charcoal);
+  }
+
+  .work__empty-tc {
+    color: var(--c-blue);
+  }
+
+  .work__empty-copy {
+    grid-column: 9 / -1;
+    display: grid;
+    gap: 16px;
+  }
+
+  .work__empty-title {
+    font-size: var(--step-3);
+    line-height: 1;
+  }
+
+  .work__empty-text {
+    color: var(--c-gray);
+  }
+
+  @media (max-width: 900px) {
+    .work__empty-frame,
+    .work__empty-copy {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

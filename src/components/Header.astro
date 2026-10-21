@@ -1,0 +1,288 @@
+---
+import { site } from '../content';
+
+interface Props {
+  linkBase?: string;
+}
+const { linkBase = '/' } = Astro.props;
+const links = [
+  { href: `${linkBase}#work`, label: 'Work' },
+  { href: `${linkBase}#about`, label: 'About' },
+  { href: `${linkBase}#contact`, label: 'Contact' },
+];
+---
+
+<header class="site-header" data-header>
+  <a class="wordmark" href="/" aria-label={`${site.brand} — home`}>
+    <span class="wordmark__a">Wizard</span><span class="wordmark__b serif">Fingers</span>
+  </a>
+
+  <nav class="nav" aria-label="Primary">
+    <ul>
+      {
+        links.map((l) => (
+          <li>
+            <a href={l.href} data-nav-link>
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <button
+    class="menu-toggle"
+    type="button"
+    aria-expanded="false"
+    aria-controls="mobile-menu"
+    data-menu-toggle
+  >
+    <span class="menu-toggle__text">Menu</span>
+    <span class="menu-toggle__icon" aria-hidden="true"><span></span><span></span></span>
+  </button>
+</header>
+
+<div
+  class="mobile-menu"
+  id="mobile-menu"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Site menu"
+  hidden
+  data-menu
+>
+  <nav aria-label="Mobile">
+    <ul>
+      {
+        links.map((l, i) => (
+          <li>
+            <a href={l.href} data-menu-link>
+              <span class="label">0{i + 1}</span>
+              <span class="display">{l.label}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+  <p class="label mobile-menu__foot">{site.brand} · {site.name}</p>
+</div>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    height: var(--header-h);
+    padding-inline: var(--gutter);
+    pointer-events: none;
+    transition: transform var(--t-med) var(--ease-out);
+  }
+
+  .site-header > * {
+    pointer-events: auto;
+  }
+
+  /* Soft scrim keeps the wordmark readable over any imagery */
+  .site-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -28px;
+    z-index: -1;
+    background: linear-gradient(to bottom, rgb(10 10 11 / 0.96), rgb(10 10 11 / 0.82) 50%, rgb(10 10 11 / 0.3) 80%, transparent);
+    opacity: 0;
+    transition: opacity var(--t-med) var(--ease-out);
+    pointer-events: none;
+  }
+
+  :global(html.scrolled) .site-header::before {
+    opacity: 1;
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.28em;
+    padding: 8px 0;
+    color: var(--c-ivory);
+    text-decoration: none;
+    font-size: 1.12rem;
+    line-height: 1;
+    text-shadow: 0 1px 12px rgb(10 10 11 / 0.6);
+  }
+
+  .wordmark__a {
+    font-family: var(--f-display);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .wordmark__b {
+    font-size: 1.28em;
+    color: var(--c-ivory);
+    transition: color var(--t-fast);
+  }
+
+  .wordmark:hover .wordmark__b,
+  .wordmark:focus-visible .wordmark__b {
+    color: var(--c-blue);
+  }
+
+  .nav ul {
+    display: flex;
+    gap: 4px;
+    padding: 5px;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    background: rgb(23 23 25 / 0.72);
+    backdrop-filter: blur(14px) saturate(140%);
+    -webkit-backdrop-filter: blur(14px) saturate(140%);
+  }
+
+  .nav a {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 18px;
+    border-radius: 999px;
+    color: var(--c-ivory);
+    font-family: var(--f-mono);
+    font-size: 0.74rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      background-color var(--t-fast),
+      color var(--t-fast);
+  }
+
+  .nav a:hover {
+    background: rgb(242 240 234 / 0.08);
+  }
+
+  .nav a[aria-current='true'] {
+    background: var(--c-ivory);
+    color: var(--c-black);
+  }
+
+  .nav a[aria-current='true']::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 9px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--c-blue);
+  }
+
+  .menu-toggle {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding: 0 6px 0 16px;
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    background: rgb(23 23 25 / 0.8);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    cursor: pointer;
+    font-family: var(--f-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .menu-toggle__icon {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--c-ivory);
+  }
+
+  .menu-toggle__icon span {
+    position: absolute;
+    width: 12px;
+    height: 1.5px;
+    background: var(--c-black);
+    transition: transform var(--t-med) var(--ease-out);
+  }
+
+  .menu-toggle__icon span:first-child {
+    transform: translateY(-3px);
+  }
+  .menu-toggle__icon span:last-child {
+    transform: translateY(3px);
+  }
+
+  .menu-toggle[aria-expanded='true'] .menu-toggle__icon span:first-child {
+    transform: rotate(45deg);
+  }
+  .menu-toggle[aria-expanded='true'] .menu-toggle__icon span:last-child {
+    transform: rotate(-45deg);
+  }
+
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(var(--header-h) + 32px) var(--gutter) 32px;
+    background:
+      radial-gradient(120% 60% at 100% 0%, rgb(66 117 255 / 0.22), transparent 60%),
+      var(--c-black);
+  }
+
+  .mobile-menu[hidden] {
+    display: none;
+  }
+
+  .mobile-menu ul {
+    display: grid;
+    gap: 4px;
+  }
+
+  .mobile-menu a {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--c-line);
+    color: var(--c-ivory);
+    text-decoration: none;
+  }
+
+  .mobile-menu .display {
+    font-size: clamp(3.5rem, 18vw, 6rem);
+  }
+
+  .mobile-menu a:active .display,
+  .mobile-menu a:hover .display {
+    color: var(--c-blue);
+  }
+
+  @media (max-width: 720px) {
+    .nav {
+      display: none;
+    }
+    .menu-toggle {
+      display: inline-flex;
+    }
+  }
+
+  :global(html.menu-open) .site-header::before {
+    opacity: 0;
+  }
+</style>

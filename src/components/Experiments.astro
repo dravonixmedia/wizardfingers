@@ -1,0 +1,175 @@
+---
+import Media from './Media.astro';
+import { experimentsCopy, publishedExperiments } from '../content';
+---
+
+{
+  publishedExperiments.length > 0 && (
+    <section class="section lab" id="experiments" aria-labelledby="lab-title">
+      <div class="wrap">
+        <div class="section-head" data-reveal>
+          <p class="label label--accent">{experimentsCopy.label}</p>
+          <h2 id="lab-title" class="display">{experimentsCopy.headline}</h2>
+          <p>{experimentsCopy.intro}</p>
+        </div>
+        <ul class="lab__list">
+          {publishedExperiments.map((e, i) => {
+            const Tag = e.link ? 'a' : 'div';
+            return (
+              <li class="lab__item" data-reveal data-shape={['tall', 'square', 'wide', 'square'][i % 4]}>
+                <Tag
+                  class="lab__inner"
+                  {...(e.link ? { href: e.link.url, target: '_blank', rel: 'noopener noreferrer' } : {})}
+                >
+                  <div class="lab__media">
+                    {e.video ? (
+                      <video
+                        muted
+                        loop
+                        playsinline
+                        preload="none"
+                        aria-hidden="true"
+                        data-preview
+                        data-autoplay-visible
+                        data-src={e.video}
+                        data-type="video/mp4"
+                      />
+                    ) : null}
+                    {e.image ? (
+                      <Media src={e.image.src} alt={e.image.alt} focal={e.image.focal} sizes="(max-width: 720px) 100vw, 33vw" widths={[480, 768, 1080]} />
+                    ) : (
+                      <div class="lab__type" aria-hidden="true">
+                        <span class="serif">{e.title}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div class="lab__meta">
+                    <span class="label">
+                      {e.kind}
+                      {e.year ? ` · ${e.year}` : ''}
+                      {e.sample ? ' · Sample (dev only)' : ''}
+                    </span>
+                    <h3 class="lab__title">{e.title}</h3>
+                    <p class="lab__desc">{e.description}</p>
+                    {e.link && (
+                      <span class="label lab__cta">
+                        {e.link.label ?? 'Open'} ↗<span class="sr-only"> (opens in a new tab)</span>
+                      </span>
+                    )}
+                  </div>
+                </Tag>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .lab__list {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(24px, 3vw, 48px) var(--gutter);
+    align-items: start;
+  }
+
+  .lab__item {
+    grid-column: span 4;
+  }
+  .lab__item[data-shape='wide'] {
+    grid-column: span 8;
+  }
+  .lab__item:nth-child(4n + 2) {
+    margin-top: clamp(32px, 6vw, 96px);
+  }
+
+  .lab__inner {
+    display: grid;
+    gap: 16px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .lab__media {
+    position: relative;
+    overflow: hidden;
+    background: var(--c-charcoal);
+    aspect-ratio: 1;
+  }
+  .lab__item[data-shape='tall'] .lab__media { aspect-ratio: 3 / 4; }
+  .lab__item[data-shape='wide'] .lab__media { aspect-ratio: 16 / 9; }
+
+  .lab__media :global(img),
+  .lab__media video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1);
+    transition: filter 0.6s var(--ease-out), transform 1s var(--ease-out);
+  }
+
+  .lab__media video {
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .lab__media video.is-ready {
+    opacity: 1;
+  }
+
+  a.lab__inner:hover .lab__media :global(img) {
+    filter: none;
+    transform: scale(1.03);
+  }
+
+  .lab__type {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 12%;
+    text-align: center;
+    font-size: clamp(1.6rem, 1rem + 2vw, 3rem);
+    line-height: 1;
+    background: radial-gradient(70% 70% at 30% 20%, rgb(66 117 255 / 0.25), transparent 70%), var(--c-charcoal);
+  }
+
+  .lab__meta {
+    display: grid;
+    gap: 6px;
+  }
+
+  .lab__title {
+    font-size: var(--step-1);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  .lab__desc {
+    color: var(--c-gray);
+    font-size: 0.95rem;
+  }
+
+  .lab__cta {
+    color: var(--c-ivory);
+  }
+
+  @media (max-width: 900px) {
+    .lab__item,
+    .lab__item[data-shape='wide'] {
+      grid-column: span 6;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .lab__item,
+    .lab__item[data-shape='wide'] {
+      grid-column: 1 / -1;
+      margin-top: 0 !important;
+    }
+  }
+</style>

@@ -1,0 +1,143 @@
+---
+import { getImage } from 'astro:assets';
+import type { FilmSource } from '../content/types';
+import { resolveImage } from '../lib/media';
+
+interface Props {
+  source: FilmSource;
+  /** Path relative to src/media/ */
+  poster?: string;
+  aspect?: number;
+  /** Start playback immediately (used inside the showreel dialog after a click). */
+  autoplay?: boolean;
+}
+
+const { source, poster, aspect = 16 / 9, autoplay = false } = Astro.props;
+const posterMeta = resolveImage(poster);
+const posterUrl = posterMeta ? (await getImage({ src: posterMeta, width: 1920, format: 'webp' })).src : undefined;
+
+let embed: string | undefined;
+if (source.provider === 'youtube') {
+  embed = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(source.id)}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
+} else if (source.provider === 'vimeo') {
+  const h = source.hash ? `h=${encodeURIComponent(source.hash)}&` : '';
+  embed = `https://player.vimeo.com/video/${encodeURIComponent(source.id)}?${h}autoplay=1&dnt=1&title=0&byline=0&portrait=0`;
+}
+---
+
+<div class="film" style={`aspect-ratio:${aspect}`} data-film>
+  {
+    source.provider === 'file' ? (
+      <video class="film__video" controls playsinline preload="none" poster={posterUrl} autoplay={autoplay} data-film-video>
+        <source src={source.src} type={source.type ?? 'video/mp4'} />
+        {source.captions && <track kind="captions" src={source.captions} srclang="en" label="English" default />}
+        <p>
+          Your browser can’t play this video. <a href={source.src}>Download it instead</a>.
+        </p>
+      </video>
+    ) : (
+      <button class="film__facade" type="button" data-film-embed={embed} data-film-title={source.title}>
+        {posterUrl ? <img src={posterUrl} alt="" loading="lazy" decoding="async" /> : <span class="film__bg" />}
+        <span class="film__play">
+          <span class="film__icon" aria-hidden="true">▶</span>
+          <span class="label">
+            Play film<span class="sr-only">: {source.title}</span>
+          </span>
+        </span>
+        <span class="film__note label">Loads player from {source.provider === 'youtube' ? 'YouTube' : 'Vimeo'}</span>
+      </button>
+    )
+  }
+</div>
+
+<style>
+  .film {
+    position: relative;
+    width: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .film :global(iframe),
+  .film__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    background: #000;
+  }
+
+  .film__facade {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: #000;
+    cursor: pointer;
+  }
+
+  .film__facade img,
+  .film__bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.6) brightness(0.7);
+    transition: filter 0.6s var(--ease-out), transform 1.2s var(--ease-out);
+  }
+
+  .film__bg {
+    background: radial-gradient(60% 60% at 50% 50%, rgb(66 117 255 / 0.25), transparent 70%), var(--c-charcoal);
+  }
+
+  .film__facade:hover img,
+  .film__facade:focus-visible img {
+    filter: none;
+    transform: scale(1.02);
+  }
+
+  .film__play {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 22px 10px 10px;
+    border-radius: 999px;
+    background: rgb(10 10 11 / 0.75);
+    border: 1px solid var(--c-line-strong);
+    color: var(--c-ivory);
+  }
+
+  .film__icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: var(--c-ivory);
+    color: var(--c-black);
+    font-size: 0.9rem;
+    transition: background-color var(--t-fast);
+  }
+
+  .film__facade:hover .film__icon,
+  .film__facade:focus-visible .film__icon {
+    background: var(--c-blue);
+    color: var(--c-ivory);
+  }
+
+  .film__facade:focus-visible {
+    outline-offset: -4px;
+  }
+
+  .film__note {
+    position: absolute;
+    left: 16px;
+    bottom: 14px;
+    font-size: 0.62rem;
+  }
+</style>

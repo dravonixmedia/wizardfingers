@@ -1,0 +1,361 @@
+---
+import { getImage } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import Media from '../../components/Media.astro';
+import FilmPlayer from '../../components/FilmPlayer.astro';
+import ProjectIntro from '../../components/ProjectIntro.astro';
+import { dimensionLabels, nextProject, publishedProjects, site, type Project } from '../../content';
+import { resolveImage } from '../../lib/media';
+import { projectJsonLd } from '../../lib/seo';
+
+export function getStaticPaths() {
+  return publishedProjects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+const next = nextProject(project.slug);
+const coverMeta = resolveImage(project.cover.src);
+const og = coverMeta ? await getImage({ src: coverMeta, width: 1200, height: 630, format: 'jpg', fit: 'cover' }) : undefined;
+const ogUrl = og ? new URL(og.src, site.url).toString() : undefined;
+
+const sections = [
+  { id: 'overview', title: 'Overview', body: project.overview },
+  { id: 'contribution', title: project.category === 'digital' ? 'Role & contribution' : 'Contribution', body: project.contribution },
+  { id: 'approach', title: 'Approach', body: project.approach },
+].filter((s) => s.body && s.body.length > 0);
+
+const isFilm = Boolean(project.film);
+const websiteLabel = project.website?.label ?? 'Visit website';
+---
+
+<Base
+  path={`/work/${project.slug}/`}
+  title={`${project.title} — ${dimensionLabels[project.category]} | ${site.brand}`}
+  description={project.summary}
+  ogImage={og?.src}
+  ogImageAlt={project.cover.alt}
+  ogType="article"
+  noindex={project.sample}
+  jsonLd={projectJsonLd(project, ogUrl)}
+>
+  <article class:list={['pj', `pj--${project.category}`, isFilm && 'pj--film']}>
+    <header class="pj__head wrap">
+      <nav class="pj__crumbs" aria-label="Breadcrumb">
+        <a class="pj__back label" href="/#work"><span aria-hidden="true">←</span> All work</a>
+      </nav>
+      {project.sample && <p class="pj__sample label">Sample content · development only</p>}
+      <h1 class="pj__title display" data-hero-in>{project.title}</h1>
+      {!isFilm && <ProjectIntro project={project} />}
+    </header>
+
+    <div class="pj__hero" style={`view-transition-name:cover-${project.slug}`} data-hero-in>
+      {
+        project.film ? (
+          <div class="wrap">
+            <FilmPlayer source={project.film.source} poster={project.film.poster ?? project.cover.src} aspect={project.film.aspect} />
+          </div>
+        ) : (
+          <div class="pj__cover">
+            <Media src={project.cover.src} alt={project.cover.alt} focal={project.cover.focal} priority sizes="100vw" />
+          </div>
+        )
+      }
+    </div>
+
+    {
+      isFilm && (
+        <div class="wrap pj__after-film">
+          <ProjectIntro project={project} />
+        </div>
+      )
+    }
+
+    {
+      sections.length > 0 && (
+        <div class="pj__body wrap">
+          {sections.map((s, i) => (
+            <section class="pj__section" aria-labelledby={`pj-${s.id}`} data-reveal>
+              <h2 id={`pj-${s.id}`} class="label">
+                <span class="pj__num">0{i + 1}</span> {s.title}
+              </h2>
+              <div class="pj__text">
+                {s.body!.map((para, j) => (
+                  <p class:list={[j === 0 && i === 0 && 'pj__lead']}>{para}</p>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )
+    }
+
+    {
+      project.gallery && project.gallery.length > 0 && (
+        <section class="pj__gallery wrap" aria-labelledby="pj-gallery">
+          <h2 id="pj-gallery" class="label">Gallery</h2>
+          <ul class="pj__grid">
+            {project.gallery.map((g, i) => (
+              <li class:list={['pj__fig', i % 3 === 0 && 'pj__fig--full']} data-reveal>
+                <figure>
+                  <Media
+                    src={g.src}
+                    alt={g.alt}
+                    fit="natural"
+                    sizes={i % 3 === 0 ? '(max-width: 720px) 100vw, 92vw' : '(max-width: 720px) 100vw, 46vw'}
+                  />
+                  {g.caption && <figcaption class="label">{g.caption}</figcaption>}
+                </figure>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    {
+      project.website && (
+        <div class="pj__visit wrap" data-reveal>
+          <a class="pj__visit-link" href={project.website.url} target="_blank" rel="noopener noreferrer">
+            <span class="label">Live project</span>
+            <span class="display">{websiteLabel} ↗</span>
+            <span class="sr-only">(opens in a new tab)</span>
+          </a>
+        </div>
+      )
+    }
+
+    <nav class="pj__next wrap" aria-label="More work">
+      {
+        next ? (
+          <a class="pj__next-link" href={`/work/${next.slug}/`}>
+            <span class="label">Next project · {dimensionLabels[next.category]}</span>
+            <span class="pj__next-title display">{next.title}</span>
+            <span class="pj__next-thumb" aria-hidden="true">
+              <Media src={next.cover.src} alt="" focal={next.cover.focal} sizes="(max-width: 720px) 100vw, 30vw" widths={[480, 768, 1080]} />
+            </span>
+          </a>
+        ) : null
+      }
+      <a class="btn" href="/#work"><span aria-hidden="true">←</span> Back to all work</a>
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .pj__head {
+    padding-top: calc(var(--header-h) + clamp(24px, 4vw, 64px));
+    padding-bottom: clamp(32px, 5vw, 72px);
+  }
+
+  .pj__crumbs {
+    margin-bottom: clamp(24px, 4vw, 56px);
+  }
+
+  .pj__back {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    min-height: 44px;
+    color: var(--c-ivory);
+    text-decoration: none;
+  }
+
+  .pj__back:hover span {
+    transform: translateX(-4px);
+  }
+  .pj__back span {
+    transition: transform var(--t-med) var(--ease-out);
+  }
+
+  .pj__sample {
+    color: #ffd36b;
+    margin-bottom: 16px;
+  }
+
+  .pj__title {
+    font-size: clamp(3.4rem, 1rem + 11vw, 14rem);
+    line-height: 0.84;
+    overflow-wrap: anywhere;
+    margin-bottom: clamp(28px, 4vw, 56px);
+  }
+
+  .pj__hero {
+    margin-bottom: clamp(64px, 9vw, 140px);
+  }
+
+  .pj--film .pj__head {
+    padding-bottom: clamp(24px, 3vw, 40px);
+  }
+
+  .pj--film .pj__title {
+    font-size: clamp(3rem, 1rem + 8vw, 10rem);
+    margin-bottom: 0;
+  }
+
+  .pj--film .pj__hero {
+    margin-bottom: clamp(40px, 5vw, 72px);
+  }
+
+  .pj__after-film {
+    margin-bottom: clamp(64px, 9vw, 140px);
+  }
+
+  .pj__cover {
+    aspect-ratio: 2.2 / 1;
+    max-height: 88vh;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .pj__body {
+    display: grid;
+    gap: clamp(56px, 7vw, 112px);
+    margin-bottom: clamp(80px, 10vw, 160px);
+  }
+
+  .pj__section {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 20px var(--gutter);
+    padding-top: 24px;
+    border-top: 1px solid var(--c-line);
+  }
+
+  .pj__section h2 {
+    grid-column: 1 / span 3;
+    color: var(--c-ivory);
+  }
+
+  .pj__num {
+    color: var(--c-blue);
+    margin-right: 8px;
+  }
+
+  .pj__text {
+    grid-column: 5 / span 7;
+    display: grid;
+    gap: 18px;
+    color: var(--c-gray);
+    max-width: 66ch;
+  }
+
+  .pj__lead {
+    color: var(--c-ivory);
+    font-size: var(--step-1);
+    line-height: 1.45;
+  }
+
+  .pj__gallery {
+    margin-bottom: clamp(80px, 10vw, 160px);
+  }
+
+  .pj__gallery > h2 {
+    margin-bottom: 24px;
+  }
+
+  .pj__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gutter);
+    align-items: start;
+  }
+
+  .pj__fig--full {
+    grid-column: 1 / -1;
+  }
+
+  .pj__fig figure {
+    display: grid;
+    gap: 10px;
+  }
+
+  .pj__visit {
+    margin-bottom: clamp(80px, 10vw, 160px);
+  }
+
+  .pj__visit-link {
+    display: grid;
+    gap: 12px;
+    padding: clamp(32px, 5vw, 64px) 0;
+    border-top: 1px solid var(--c-line);
+    border-bottom: 1px solid var(--c-line);
+    text-decoration: none;
+  }
+
+  .pj__visit-link .display {
+    font-size: var(--step-4);
+    transition: color var(--t-fast);
+  }
+
+  .pj__visit-link:hover .display {
+    color: var(--c-blue);
+  }
+
+  .pj__next {
+    display: grid;
+    gap: 40px;
+    justify-items: start;
+    padding-bottom: clamp(80px, 10vw, 140px);
+  }
+
+  .pj__next-link {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(160px, 28%);
+    grid-template-areas: 'label thumb' 'title thumb';
+    align-items: end;
+    gap: 12px var(--gutter);
+    width: 100%;
+    padding-top: 32px;
+    border-top: 1px solid var(--c-line-strong);
+    text-decoration: none;
+  }
+
+  .pj__next-link .label {
+    grid-area: label;
+  }
+
+  .pj__next-title {
+    grid-area: title;
+    font-size: clamp(3rem, 1rem + 8vw, 10rem);
+    line-height: 0.86;
+    transition: color var(--t-fast);
+  }
+
+  .pj__next-link:hover .pj__next-title {
+    color: var(--c-blue);
+  }
+
+  .pj__next-thumb {
+    grid-area: thumb;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    filter: grayscale(1);
+    transition: filter 0.6s var(--ease-out);
+  }
+
+  .pj__next-link:hover .pj__next-thumb {
+    filter: none;
+  }
+
+  @media (max-width: 900px) {
+    .pj__section h2,
+    .pj__text {
+      grid-column: 1 / -1;
+    }
+    .pj__cover {
+      aspect-ratio: 4 / 3;
+    }
+    .pj__grid {
+      grid-template-columns: 1fr;
+    }
+    .pj__next-link {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'thumb' 'label' 'title';
+    }
+  }
+</style>

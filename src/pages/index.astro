@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Work from '../components/Work.astro';
+import About from '../components/About.astro';
+import FrameToInterface from '../components/FrameToInterface.astro';
+import Expertise from '../components/Expertise.astro';
+import Experiments from '../components/Experiments.astro';
+import Contact from '../components/Contact.astro';
+import ShowreelDialog from '../components/ShowreelDialog.astro';
+import { siteJsonLd } from '../lib/seo';
+---
+
+<Base path="/" linkBase="" jsonLd={siteJsonLd()}>
+  <Hero />
+  <Work />
+  <About />
+  <FrameToInterface />
+  <Expertise />
+  <Experiments />
+  <Contact />
+  <ShowreelDialog />
+</Base>

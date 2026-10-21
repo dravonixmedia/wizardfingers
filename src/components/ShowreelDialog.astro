@@ -1,0 +1,63 @@
+---
+import FilmPlayer from './FilmPlayer.astro';
+import { site } from '../content';
+const reel = site.showreel;
+---
+
+{
+  reel && (
+    <dialog class="reel" aria-labelledby="reel-title" data-showreel>
+      <div class="reel__inner">
+        <div class="reel__bar">
+          <h2 id="reel-title" class="label">{reel.title}</h2>
+          <button class="reel__close label" type="button" data-showreel-close>
+            Close <span aria-hidden="true">✕</span>
+          </button>
+        </div>
+        <div class="reel__player" data-showreel-slot />
+        <template data-showreel-template>
+          <FilmPlayer source={reel} autoplay />
+        </template>
+      </div>
+    </dialog>
+  )
+}
+
+<style>
+  .reel {
+    width: min(100vw - 2 * var(--gutter), 1400px);
+    max-width: none;
+    max-height: none;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--c-ivory);
+  }
+
+  .reel::backdrop {
+    background: rgb(10 10 11 / 0.92);
+    backdrop-filter: blur(6px);
+  }
+
+  .reel__bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+
+  .reel__close {
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    background: var(--c-black);
+    color: var(--c-ivory);
+    cursor: pointer;
+  }
+
+  .reel__close:hover {
+    border-color: var(--c-ivory);
+  }
+</style>

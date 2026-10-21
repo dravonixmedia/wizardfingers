@@ -1,0 +1,37 @@
+{
+  "name": "wizardfingers",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Wizard Fingers — portfolio of Pranav, Creative Technologist.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "dev:samples": "WF_SAMPLES=1 astro dev",
+    "build": "astro build",
+    "preview": "npm run build && wrangler dev",
+    "check": "astro check && tsc -p worker/tsconfig.json --noEmit",
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "verify": "npm run check && npm run build && npm test",
+    "deploy": "npm run verify && wrangler deploy"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/jetbrains-mono": "5.3.0",
+    "@fontsource/anton": "5.3.0",
+    "@fontsource/instrument-serif": "5.3.0",
+    "astro": "7.3.8",
+    "gsap": "3.15.0",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.11",
+    "@cloudflare/workers-types": "5.20261021.1",
+    "@types/node": "22.20.5",
+    "playwright-core": "1.64.1",
+    "typescript": "6.0.3",
+    "wrangler": "4.149.0"
+  }
+}

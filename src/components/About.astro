@@ -1,0 +1,169 @@
+---
+import Media from './Media.astro';
+import { about, site } from '../content';
+import { resolveImage } from '../lib/media';
+
+const portrait = site.portrait && resolveImage(site.portrait.src) ? site.portrait : undefined;
+// "Curiosity is the starting point." → display + italic serif emphasis
+const [first, ...rest] = about.headline.split(' the ');
+const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
+---
+
+<section class="section about" id="about" aria-labelledby="about-title">
+  <div class="wrap about__grid">
+    <p class="label label--accent about__label" data-reveal>{about.label}</p>
+
+    <h2 id="about-title" class="about__title" data-reveal>
+      <span class="display">{first}</span>
+      {emphasis && <span class="serif">{emphasis}</span>}
+    </h2>
+
+    <div class="about__visual" data-reveal>
+      {
+        portrait ? (
+          <figure class="about__portrait" data-parallax="0.08">
+            <Media src={portrait.src} alt={portrait.alt} focal={portrait.focal} sizes="(max-width: 900px) 100vw, 40vw" />
+          </figure>
+        ) : (
+          <div class="about__since" aria-hidden="true">
+            <span class="label">Since</span>
+            <span class="about__year display">2016</span>
+          </div>
+        )
+      }
+    </div>
+
+    <div class="about__copy">
+      <p class="about__lead" data-reveal>{about.lead}</p>
+      {about.paragraphs.map((p) => <p data-reveal>{p}</p>)}
+      <ul class="about__threads" aria-label="Through-lines of the practice">
+        {
+          about.threads.map((t, i) => (
+            <li data-reveal>
+              <span class="label">0{i + 1} — {t.label}</span>
+              <span>{t.text}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about {
+    background:
+      radial-gradient(50% 40% at 0% 100%, rgb(66 117 255 / 0.1), transparent 70%),
+      var(--c-black);
+  }
+
+  .about__grid {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 32px var(--gutter);
+  }
+
+  .about__label {
+    grid-column: 1 / -1;
+  }
+
+  .about__title {
+    grid-column: 1 / span 11;
+    font-weight: 400;
+    font-size: var(--step-4);
+    line-height: 0.9;
+    margin-bottom: clamp(32px, 6vw, 96px);
+  }
+
+  .about__title .display {
+    display: block;
+  }
+
+  .about__title .serif {
+    display: block;
+    padding-left: 12%;
+    font-size: 1.08em;
+    line-height: 0.95;
+    color: var(--c-gray);
+  }
+
+  .about__visual {
+    grid-column: 1 / span 5;
+    align-self: start;
+  }
+
+  .about__portrait {
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    filter: grayscale(1) contrast(1.06);
+    position: relative;
+  }
+
+  .about__portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(200deg, rgb(66 117 255 / 0.25), transparent 45%);
+    mix-blend-mode: screen;
+  }
+
+  .about__since {
+    display: grid;
+    gap: 8px;
+    padding: 24px 0;
+    border-top: 1px solid var(--c-line);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .about__year {
+    font-size: clamp(6rem, 3rem + 12vw, 16rem);
+    line-height: 0.8;
+    color: transparent;
+    -webkit-text-stroke: 1px rgb(242 240 234 / 0.5);
+  }
+
+  .about__copy {
+    grid-column: 7 / -1;
+    display: grid;
+    gap: 22px;
+    color: var(--c-gray);
+    max-width: 62ch;
+  }
+
+  .about__lead {
+    color: var(--c-ivory);
+    font-size: var(--step-2);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  .about__threads {
+    display: grid;
+    margin-top: 24px;
+    border-top: 1px solid var(--c-line);
+  }
+
+  .about__threads li {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--c-line);
+    color: var(--c-ivory);
+  }
+
+  @media (max-width: 900px) {
+    .about__title,
+    .about__visual,
+    .about__copy {
+      grid-column: 1 / -1;
+    }
+    .about__title .serif {
+      padding-left: 0;
+    }
+    .about__threads li {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+</style>

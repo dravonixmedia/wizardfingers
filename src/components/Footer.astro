@@ -1,0 +1,52 @@
+---
+import { site } from '../content';
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap site-footer__inner">
+    <p class="site-footer__brand">
+      <span class="display">Wizard</span> <span class="serif">Fingers</span>
+    </p>
+    <p class="label">{site.name} · {site.role}</p>
+    <p class="label">© <span data-year>{year}</span> {site.brand}</p>
+    <a class="label link-line site-footer__top" href="#main">Back to top ↑</a>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--c-line);
+    padding-block: 40px calc(40px + env(safe-area-inset-bottom));
+  }
+
+  .site-footer__inner {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr auto;
+    gap: 16px 32px;
+    align-items: baseline;
+  }
+
+  .site-footer__brand {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .site-footer__brand .serif {
+    font-size: 1.2em;
+  }
+
+  .site-footer__top {
+    color: var(--c-ivory);
+    padding-block: 12px;
+  }
+
+  @media (max-width: 720px) {
+    .site-footer__inner {
+      grid-template-columns: 1fr 1fr;
+    }
+    .site-footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+</style>

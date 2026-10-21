@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Existing production Worker. Note: no hyphen. Do NOT use "wizard-fingers".
+  "name": "wizardfingers",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash",
+    // The Worker runs first so it can redirect www → apex and set headers.
+    "run_worker_first": true
+  },
+  // Keep the workers.dev subdomain and Preview URLs disabled, matching the
+  // dashboard. Set explicitly so `wrangler deploy` never re-enables them.
+  "workers_dev": false,
+  "preview_urls": false,
+  // Custom domains already attached to this Worker in the dashboard.
+  // Declared here so every deploy keeps them attached to this Worker.
+  "routes": [
+    { "pattern": "wizardfingers.com", "custom_domain": true },
+    { "pattern": "www.wizardfingers.com", "custom_domain": true }
+  ]
+}

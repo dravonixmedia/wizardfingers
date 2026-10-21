@@ -1,0 +1,74 @@
+---
+import { Picture } from 'astro:assets';
+import type { FocalPoint } from '../content/types';
+import { objectPosition, resolveImage } from '../lib/media';
+
+interface Props {
+  src: string | undefined;
+  alt: string;
+  focal?: FocalPoint;
+  /** `sizes` attribute for responsive selection. */
+  sizes?: string;
+  widths?: number[];
+  /** Use for the single above-the-fold hero image only. */
+  priority?: boolean;
+  /** "cover" crops to the container (using the focal point); "natural" keeps the original aspect ratio. */
+  fit?: 'cover' | 'natural';
+  class?: string;
+  /** Optional view-transition name for cross-page morphs. */
+  transitionName?: string;
+}
+
+const {
+  src,
+  alt,
+  focal,
+  sizes = '100vw',
+  widths = [480, 768, 1080, 1440, 1920, 2560],
+  priority = false,
+  fit = 'cover',
+  class: className,
+  transitionName,
+} = Astro.props;
+
+const image = resolveImage(src);
+const usableWidths = image ? widths.filter((w) => w <= image.width).concat(image.width < Math.max(...widths) ? [image.width] : []) : [];
+const style = [fit === 'cover' ? `object-position:${objectPosition(focal)}` : '', transitionName ? `view-transition-name:${transitionName}` : '']
+  .filter(Boolean)
+  .join(';');
+---
+
+{
+  image ? (
+    <Picture
+      src={image}
+      alt={alt}
+      widths={[...new Set(usableWidths)]}
+      sizes={sizes}
+      formats={['avif', 'webp']}
+      fallbackFormat="jpg"
+      loading={priority ? 'eager' : 'lazy'}
+      decoding={priority ? 'sync' : 'async'}
+      fetchpriority={priority ? 'high' : 'auto'}
+      class:list={['media', `media--${fit}`, className]}
+      style={style || undefined}
+      quality={80}
+    />
+  ) : (
+    <div class:list={['media-fallback', className]} role={alt ? 'img' : undefined} aria-label={alt || undefined}>
+      <span class="label">Image unavailable</span>
+    </div>
+  )
+}
+
+<style>
+  :global(.media--cover) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  :global(.media--natural) {
+    width: 100%;
+    height: auto;
+  }
+</style>

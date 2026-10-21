@@ -1,0 +1,89 @@
+---
+import Base from '../layouts/Base.astro';
+import { site } from '../content';
+---
+
+<Base path="/404/" title={`Lost in the edit — ${site.brand}`} description="This page could not be found." noindex>
+  <section class="nf" aria-labelledby="nf-title">
+    <div class="nf__frame" aria-hidden="true">
+      <span class="label nf__tc">00:00:04:04</span>
+      <span class="label nf__slate">Scene missing · Take 404</span>
+    </div>
+    <div class="wrap nf__inner">
+      <p class="label label--accent" data-hero-in>Error 404</p>
+      <h1 id="nf-title" data-hero-in>
+        <span class="display nf__big">Cut.</span>
+        <span class="serif nf__sub">This scene didn’t make the final edit.</span>
+      </h1>
+      <p class="nf__text" data-hero-in>The page you’re looking for has moved, been renamed or never existed.</p>
+      <div class="nf__actions" data-hero-in>
+        <a class="btn btn--solid" href="/">Back to the opening <span class="arrow" aria-hidden="true">→</span></a>
+        <a class="btn" href="/#work">See the work</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .nf {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(50% 50% at 80% 30%, rgb(66 117 255 / 0.18), transparent 70%),
+      linear-gradient(180deg, #000 0 8%, transparent 8% 92%, #000 92%),
+      var(--c-black);
+  }
+
+  .nf__frame {
+    position: absolute;
+    inset: 10% var(--gutter);
+    border: 1px solid var(--c-line);
+    pointer-events: none;
+  }
+
+  .nf__tc,
+  .nf__slate {
+    position: absolute;
+    top: 16px;
+  }
+  .nf__tc { right: 16px; color: var(--c-blue); }
+  .nf__slate { left: 16px; }
+
+  .nf__inner {
+    position: relative;
+    display: grid;
+    gap: 24px;
+    padding-block: calc(var(--header-h) + 40px) 80px;
+  }
+
+  .nf h1 {
+    display: grid;
+    font-weight: 400;
+  }
+
+  .nf__big {
+    font-size: clamp(7rem, 4rem + 22vw, 26rem);
+    line-height: 0.8;
+  }
+
+  .nf__sub {
+    margin-top: 0.35em;
+    font-size: var(--step-3);
+    line-height: 1;
+    color: var(--c-gray);
+  }
+
+  .nf__text {
+    color: var(--c-gray);
+    max-width: 44ch;
+  }
+
+  .nf__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+</style>

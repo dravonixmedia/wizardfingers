@@ -1,0 +1,708 @@
+---
+import Media from './Media.astro';
+import { dimensions, dimensionLabels, featuredFor, hero, publishedProjects, site } from '../content';
+import { resolveImage } from '../lib/media';
+
+const portrait = site.portrait && resolveImage(site.portrait.src) ? site.portrait : undefined;
+const hasCutout = Boolean(portrait?.cutout && resolveImage(portrait.cutout));
+const panels = dimensions.map((d) => ({
+  ...d,
+  featured: featuredFor(d.id),
+  count: publishedProjects.filter((p) => p.category === d.id).length,
+}));
+---
+
+<section class:list={['hero', portrait ? 'hero--portrait' : 'hero--type', hasCutout && 'hero--cutout']} aria-labelledby="hero-title" data-hero data-dimension="motion">
+  <!-- Atmosphere: one layer per dimension, crossfaded by the selector -->
+  <div class="hero__stage" aria-hidden="true" data-depth="0.6">
+    {
+      panels.map((d, i) => (
+        <div class:list={['atmo', `atmo--${d.id}`, i === 0 && 'is-active']} data-atmo={d.id}>
+          {d.featured && (
+            <div class="atmo__image">
+              <Media src={d.featured.cover.src} alt="" focal={d.featured.cover.focal} sizes="100vw" widths={[768, 1280, 1920]} />
+            </div>
+          )}
+          <div class="atmo__art" />
+        </div>
+      ))
+    }
+    <div class="hero__glow" data-glow></div>
+  </div>
+
+  {
+    portrait && (
+      <div class="hero__portrait" data-depth="0.35" data-hero-in>
+        <Media src={portrait.src} alt={portrait.alt} focal={portrait.focal} priority sizes="(max-width: 720px) 100vw, 60vw" class="hero__portrait-img" />
+      </div>
+    )
+  }
+
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- Film-frame guides -->
+  <div class="hero__frame" aria-hidden="true">
+    <span class="corner corner--tl"></span><span class="corner corner--tr"></span>
+    <span class="corner corner--bl"></span><span class="corner corner--br"></span>
+  </div>
+
+  <div class="hero__content wrap">
+    <div class="hero__meta" data-hero-in>
+      <p class="label label--accent">{hero.eyebrow}</p>
+      <p class="label hero__concept">{hero.concept}</p>
+    </div>
+
+    <div class="hero__identity">
+      <p class="hero__headline serif" data-hero-in>
+        {hero.headline.map((line) => <span class="hero__headline-line">{line}</span>)}
+      </p>
+      <h1 id="hero-title" class="hero__name display" data-depth="-0.25">
+        <span class="hero__name-text" data-hero-name>{site.name}</span>
+        <span class="sr-only">, {site.role}</span>
+      </h1>
+      {
+        hasCutout && portrait?.cutout && (
+          <div class="hero__cutout" aria-hidden="true" data-depth="0.35">
+            <Media src={portrait.cutout} alt="" priority sizes="(max-width: 720px) 100vw, 60vw" />
+          </div>
+        )
+      }
+    </div>
+
+    <div class="hero__bottom">
+      <div class="hero__intro" data-hero-in>
+        <p class="hero__role">{hero.professionalLine}</p>
+        <p class="hero__support">{hero.supporting}</p>
+        <div class="hero__actions">
+          <a class="btn btn--solid" href="#work">{hero.primaryAction} <span class="arrow" aria-hidden="true">↓</span></a>
+          {
+            site.showreel && (
+              <button class="btn" type="button" data-showreel-open aria-haspopup="dialog">
+                <span class="play" aria-hidden="true">▶</span> {hero.showreelAction}
+              </button>
+            )
+          }
+        </div>
+      </div>
+
+      <div class="dims" data-hero-in data-dims>
+        <p class="label dims__label" id="dims-label">Choose a dimension</p>
+        <div class="dims__tabs" role="tablist" aria-labelledby="dims-label">
+          {
+            panels.map((d, i) => (
+              <button
+                type="button"
+                role="tab"
+                id={`dim-tab-${d.id}`}
+                aria-controls={`dim-panel-${d.id}`}
+                aria-selected={i === 0 ? 'true' : 'false'}
+                tabindex={i === 0 ? 0 : -1}
+                data-dim-tab={d.id}
+                class="dims__tab"
+              >
+                <span class="dims__num">0{i + 1}</span>
+                <span class="dims__name">{d.label}</span>
+              </button>
+            ))
+          }
+          <span class="dims__indicator" aria-hidden="true" data-dim-indicator></span>
+        </div>
+        <div class="dims__panels">
+          {
+            panels.map((d, i) => (
+              <div
+                class="dims__panel"
+                role="tabpanel"
+                id={`dim-panel-${d.id}`}
+                aria-labelledby={`dim-tab-${d.id}`}
+                data-dim-panel={d.id}
+                hidden={i !== 0}
+              >
+                <p class="label dims__disciplines">{d.disciplines}</p>
+                <p class="dims__desc">{d.description}</p>
+                {d.featured ? (
+                  <a class="dims__feature" href={`/work/${d.featured.slug}/`}>
+                    <span class="dims__thumb">
+                      <Media src={d.featured.cover.src} alt="" focal={d.featured.cover.focal} sizes="120px" widths={[240]} />
+                    </span>
+                    <span class="dims__feature-text">
+                      <span class="label">Featured{d.featured.sample ? ' · Sample' : ''}</span>
+                      <span class="dims__feature-title">{d.featured.title}</span>
+                    </span>
+                    <span class="arrow" aria-hidden="true">→</span>
+                  </a>
+                ) : null}
+                {d.count > 1 && (
+                  <a class="dims__all label link-line" href="#work" data-filter-link={d.id}>
+                    All {dimensionLabels[d.id]} work ({d.count}) →
+                  </a>
+                )}
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    --glow-x: 78%;
+    --glow-y: 30%;
+    --glow-size: 55%;
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    overflow: hidden;
+    background: var(--c-black);
+  }
+
+  .hero[data-dimension='intelligence'] {
+    --glow-x: 22%;
+    --glow-y: 22%;
+    --glow-size: 60%;
+  }
+  .hero[data-dimension='digital'] {
+    --glow-x: 60%;
+    --glow-y: 88%;
+    --glow-size: 50%;
+  }
+
+  /* Stage & atmospheres ---------------------------------------------------- */
+
+  .hero__stage {
+    position: absolute;
+    inset: -24px;
+    z-index: -2;
+  }
+
+  .atmo {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 900ms var(--ease-in-out),
+      visibility 0s linear 900ms;
+  }
+
+  .atmo.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity 900ms var(--ease-in-out),
+      visibility 0s;
+  }
+
+  :global(html.motion) .atmo,
+  :global(html.motion-ready) .atmo {
+    transition: none; /* GSAP choreographs when motion is enabled */
+  }
+
+  .atmo__image {
+    position: absolute;
+    inset: 0;
+    opacity: 0.32;
+    filter: grayscale(1) contrast(1.15) brightness(0.8);
+  }
+
+  .atmo__image :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .atmo__art {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* MOTION — anamorphic light & letterbox */
+  .atmo--motion .atmo__art {
+    background:
+      linear-gradient(180deg, var(--c-black) 0 9%, transparent 9% 91%, var(--c-black) 91%),
+      linear-gradient(90deg, transparent 0%, rgb(66 117 255 / 0.0) 10%, rgb(66 117 255 / 0.55) 50%, rgb(66 117 255 / 0) 90%) 0 56% / 100% 2px no-repeat,
+      radial-gradient(40% 6% at 50% 56%, rgb(66 117 255 / 0.22), transparent 70%),
+      repeating-linear-gradient(90deg, rgb(242 240 234 / 0.035) 0 1px, transparent 1px 12.5%),
+      radial-gradient(80% 60% at 70% 55%, #1c1c20, var(--c-black) 70%);
+  }
+
+  /* INTELLIGENCE — latent dot field */
+  .atmo--intelligence .atmo__art {
+    background:
+      radial-gradient(circle, rgb(242 240 234 / 0.32) 1px, transparent 1.6px) 0 0 / 22px 22px,
+      radial-gradient(60% 55% at 30% 35%, #1b1d27, var(--c-black) 72%);
+    -webkit-mask-image: radial-gradient(70% 70% at 35% 40%, #000 20%, transparent 75%);
+    mask-image: radial-gradient(70% 70% at 35% 40%, #000 20%, transparent 75%);
+  }
+
+  .atmo--intelligence::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(40% 40% at 72% 62%, rgb(242 240 234 / 0.06), transparent 70%);
+  }
+
+  /* DIGITAL — interface grid */
+  .atmo--digital .atmo__art {
+    background:
+      linear-gradient(rgb(242 240 234 / 0.06) 1px, transparent 1px) 0 0 / 100% 64px,
+      linear-gradient(90deg, rgb(242 240 234 / 0.06) 1px, transparent 1px) 0 0 / 64px 100%,
+      radial-gradient(70% 70% at 60% 70%, #18181c, var(--c-black) 75%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 70%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 25%, #000 70%, transparent);
+  }
+
+  .atmo--digital::after {
+    content: '';
+    position: absolute;
+    left: 52%;
+    top: 18%;
+    width: 38%;
+    height: 56%;
+    border: 1px solid rgb(242 240 234 / 0.12);
+    border-top-width: 22px;
+    border-top-color: rgb(242 240 234 / 0.06);
+    border-radius: 6px;
+  }
+
+  .hero__glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(var(--glow-size) var(--glow-size) at var(--glow-x) var(--glow-y), rgb(66 117 255 / 0.26), transparent 70%);
+    transition: background-position 1s var(--ease-in-out);
+    pointer-events: none;
+  }
+
+  /* Bottom vignette keeps copy legible over any atmosphere or portrait */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(to top, rgb(10 10 11 / 0.92) 0%, rgb(10 10 11 / 0.55) 30%, transparent 60%),
+      linear-gradient(to bottom, rgb(10 10 11 / 0.6), transparent 22%);
+    pointer-events: none;
+  }
+
+  /* Portrait --------------------------------------------------------------- */
+
+  .hero__portrait {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(62%, 1000px);
+    z-index: -1;
+    filter: grayscale(1) contrast(1.08);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 30%);
+    mask-image: linear-gradient(to right, transparent, #000 30%);
+  }
+
+  .hero__portrait :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .hero__portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 45%, rgb(66 117 255 / 0.28));
+    mix-blend-mode: screen;
+  }
+
+  .hero__cutout {
+    position: absolute;
+    inset: 0 0 0 auto;
+    width: min(62%, 1000px);
+    pointer-events: none;
+    filter: grayscale(1) contrast(1.08);
+  }
+
+  .hero__cutout :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Frame guides ------------------------------------------------------------ */
+
+  .hero__frame {
+    position: absolute;
+    inset: calc(var(--header-h) + 8px) var(--gutter) 24px;
+    pointer-events: none;
+  }
+
+  .corner {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: rgb(242 240 234 / 0.35);
+    border-style: solid;
+    border-width: 0;
+  }
+  .corner--tl { top: 0; left: 0; border-top-width: 1px; border-left-width: 1px; }
+  .corner--tr { top: 0; right: 0; border-top-width: 1px; border-right-width: 1px; }
+  .corner--bl { bottom: 0; left: 0; border-bottom-width: 1px; border-left-width: 1px; }
+  .corner--br { bottom: 0; right: 0; border-bottom-width: 1px; border-right-width: 1px; }
+
+  /* Content ------------------------------------------------------------------ */
+
+  .hero__content {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: clamp(24px, 3vw, 40px);
+    padding-top: calc(var(--header-h) + clamp(24px, 3vw, 40px));
+    padding-bottom: clamp(40px, 5vw, 64px);
+  }
+
+  .hero__meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-inline: 28px;
+  }
+
+  .hero__concept {
+    color: var(--c-ivory);
+  }
+
+  .hero__identity {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: 'name headline';
+    align-items: end;
+    align-content: center;
+    gap: 0 clamp(24px, 3vw, 56px);
+  }
+
+  .hero__headline {
+    grid-area: headline;
+    justify-self: end;
+    display: grid;
+    text-align: right;
+    font-size: clamp(2rem, 0.6rem + 2.6vw, 4rem);
+    line-height: 1.02;
+    padding-bottom: 0.1em;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero__headline-line:last-child {
+    color: var(--c-gray);
+  }
+
+  .hero__name {
+    grid-area: name;
+    position: relative;
+    margin-inline: -0.03em;
+    font-size: clamp(5.5rem, min(21vw, 36svh), 24rem);
+    line-height: 0.8;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: var(--c-ivory);
+    z-index: 1;
+  }
+
+  /* Portrait without a cut-out: keep type clear of the face. */
+  .hero--portrait:not(.hero--cutout) .hero__portrait {
+    width: min(46%, 860px);
+  }
+
+  .hero--portrait:not(.hero--cutout) .hero__identity {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'headline' 'name';
+    justify-items: start;
+  }
+
+  .hero--portrait:not(.hero--cutout) .hero__headline {
+    justify-self: start;
+    text-align: left;
+    margin-bottom: 0.25em;
+  }
+
+  .hero--portrait:not(.hero--cutout) .hero__name {
+    font-size: clamp(5rem, min(17vw, 28svh), 18rem);
+  }
+
+  .hero--cutout .hero__name {
+    z-index: 0;
+  }
+
+  .hero--cutout .hero__cutout {
+    z-index: 1;
+  }
+
+  .hero__name-text {
+    display: inline-block;
+    background: linear-gradient(180deg, var(--c-ivory) 58%, rgb(242 240 234 / 0.74));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero__bottom {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(32px, 5vw, 96px);
+    align-items: start;
+  }
+
+  .hero__role {
+    font-family: var(--f-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--c-ivory);
+    margin-bottom: 14px;
+  }
+
+  .hero__support {
+    max-width: 40ch;
+    color: var(--c-gray);
+    font-size: var(--step-1);
+    line-height: 1.45;
+    margin-bottom: 24px;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .play {
+    font-size: 0.7em;
+  }
+
+  /* Dimension selector ------------------------------------------------------- */
+
+  .dims {
+    border-top: 1px solid var(--c-line-strong);
+    padding-top: 18px;
+  }
+
+  .dims__label {
+    margin-bottom: 12px;
+  }
+
+  .dims__tabs {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border: 1px solid var(--c-line);
+    border-radius: 999px;
+    padding: 4px;
+    background: rgb(10 10 11 / 0.55);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .dims__tab {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 0 12px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--c-gray);
+    cursor: pointer;
+    font-family: var(--f-mono);
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: color var(--t-med) var(--ease-out);
+  }
+
+  .dims__tab:hover {
+    color: var(--c-ivory);
+  }
+
+  .dims__tab[aria-selected='true'] {
+    color: var(--c-black);
+  }
+
+  .dims__tab:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .dims__num {
+    font-size: 0.66rem;
+    opacity: 0.7;
+  }
+
+  .dims__indicator {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc((100% - 8px) / 3);
+    border-radius: 999px;
+    background: var(--c-ivory);
+    box-shadow: 0 0 0 1px var(--c-ivory), 0 8px 30px -8px rgb(66 117 255 / 0.8);
+    transition: transform 520ms var(--ease-out);
+  }
+
+  .hero[data-dimension='intelligence'] .dims__indicator {
+    transform: translateX(100%);
+  }
+  .hero[data-dimension='digital'] .dims__indicator {
+    transform: translateX(200%);
+  }
+
+  /* Without JS the selector can't change state; show tabs as static labels */
+  :global(html:not(.js)) .dims__indicator {
+    display: none;
+  }
+
+  .dims__panels {
+    display: grid;
+    margin-top: 16px;
+  }
+
+  .dims__panel {
+    grid-area: 1 / 1;
+    display: grid;
+    align-content: start;
+    gap: 10px;
+  }
+
+  /* Inactive panels keep their space (no layout shift between dimensions)
+     but are invisible and removed from the accessibility tree. */
+  .dims__panel[hidden] {
+    display: grid;
+    visibility: hidden;
+  }
+
+  .dims__panel.is-leaving {
+    visibility: visible;
+    pointer-events: none;
+  }
+
+  .dims__disciplines {
+    color: var(--c-ivory);
+  }
+
+  .dims__desc {
+    color: var(--c-gray);
+    max-width: 52ch;
+  }
+
+  .dims__feature {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    align-items: center;
+    gap: 16px;
+    margin-top: 4px;
+    padding: 6px 16px 6px 6px;
+    border: 1px solid var(--c-line);
+    background: rgb(10 10 11 / 0.5);
+    text-decoration: none;
+    transition: border-color var(--t-fast);
+  }
+
+  .dims__feature:hover,
+  .dims__feature:focus-visible {
+    border-color: var(--c-blue);
+  }
+
+  .dims__thumb {
+    display: block;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    filter: grayscale(1);
+  }
+
+  .dims__feature:hover .dims__thumb {
+    filter: none;
+  }
+
+  .dims__feature-text {
+    display: grid;
+    gap: 2px;
+  }
+
+  .dims__feature-title {
+    font-family: var(--f-display);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    line-height: 1.1;
+  }
+
+  .dims__all {
+    justify-self: start;
+    color: var(--c-ivory);
+    padding-block: 10px;
+  }
+
+  @media (max-width: 1180px) {
+    .hero__identity {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'headline' 'name';
+    }
+    .hero__headline {
+      justify-self: end;
+      margin-bottom: 0.2em;
+    }
+    .hero__name {
+      font-size: clamp(5rem, min(32.5vw, 32svh), 24rem);
+    }
+  }
+
+  @media (max-width: 1024px) {
+    .hero__bottom {
+      grid-template-columns: 1fr;
+    }
+    .hero__portrait,
+    .hero__cutout {
+      width: 100%;
+      -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 85%);
+      mask-image: linear-gradient(to bottom, #000 40%, transparent 85%);
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero__frame,
+    .hero__concept {
+      display: none;
+    }
+    .hero__meta {
+      padding-inline: 0;
+    }
+    .hero__headline {
+      justify-self: start;
+      text-align: left;
+      margin-bottom: 12px;
+    }
+    .hero__name {
+      font-size: 32.5vw;
+    }
+    .hero__identity {
+      justify-content: flex-end;
+    }
+    .dims__tab {
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      padding: 6px 4px;
+      min-height: 52px;
+      border-radius: 26px;
+    }
+    .dims__feature {
+      grid-template-columns: 72px 1fr auto;
+    }
+  }
+</style>
