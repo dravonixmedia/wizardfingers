@@ -6,7 +6,7 @@ const media = backgrounds.sections.about;
 ---
 
 <section class:list={['about', !media && 'about--no-media']} id="about" aria-labelledby="about-title">
-  <BackgroundMedia media={media} variant="about" parallax />
+  <BackgroundMedia media={media} variant="about" />
   <div class="about__scrim" aria-hidden="true"></div>
   <div class="wrap about__inner">
     <div class="about__copy" data-reveal>
@@ -84,6 +84,24 @@ const media = backgrounds.sections.about;
   /* Narrower than the image's dark half, so the portrait keeps its breathing room. */
   .about:not(.about--no-media) .about__copy {
     max-width: min(34rem, 42%);
+  }
+
+  /* Links and /#about land with the section at the very top (the fixed header overlays the
+     portrait, as approved) rather than clearing the header and showing a strip of Work. */
+  .about:not(.about--no-media) {
+    scroll-margin-top: calc(-1 * (var(--header-h) + 16px));
+  }
+
+  /* Wide screens: a full-height section with the portrait starting below the fixed header,
+     framed exactly as approved. No scroll parallax, which would zoom into the portrait. */
+  @media (min-width: 1024px) {
+    .about:not(.about--no-media) {
+      min-height: 100vh;
+      min-height: 100lvh;
+    }
+    .about:not(.about--no-media) > :global(.bg) {
+      top: var(--header-h);
+    }
   }
 
   /* Narrower screens: no room beside the face, so the portrait sits above the text at its

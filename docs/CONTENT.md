@@ -179,7 +179,10 @@ Workers static assets are limited to 25 MiB per file.
   `opening.stages.*`. Stages crossfade as visitors scroll.
   A missing stage falls back to the studio backdrop.
 
-### Section transitions (Motion → Intelligence → Digital → About)
+### Section transitions (Motion → Intelligence → Digital)
+
+Homepage order: opening → Motion → Intelligence → Digital → Selected Work → About → Contact.
+The opening's Scroll cue leads to Motion.
 
 With JavaScript on and motion allowed, `src/scripts/chapters.ts` turns these consecutive
 sections into curtain chapters (plain CSS `position: sticky`, native scrolling, no timers or
@@ -189,15 +192,14 @@ snapping):
   full-screen panel. The next one rises from the bottom and covers it like a curtain while it
   stays pinned underneath. Scrolling back reverses it exactly.
 - Each chapter is about 1.9 viewport heights of scroll: one to rise, then a reading hold
-  (`HOLD = 0.9` in the script). Panels taller than the screen (e.g. About on phones) scroll
+  (`HOLD = 0.9` in the script). Panels taller than the screen (e.g. on short phones) scroll
   through all their content first, then pin by their bottom edge.
 - The backgrounds drift very slightly (`PARALLAX`, ±1.8%) with a matching scale so no edge is
   ever exposed.
 - Only videos that are visible play: a section is paused once the next one fully covers it.
-- About keeps its framing (portrait below the header on wide screens, stacked layout below
-  1024px). Nav links and deep links (`/#digital`) land at the start of a chapter's hold.
-- Only consecutive sections join: a published Experiments section between Digital and About
-  ends the run at Digital.
+- After Digital's hold the pinned run releases and Selected Work, About and Contact scroll as
+  ordinary sections. Nav links and deep links (`/#digital`) land at the start of a chapter's hold.
+- Only consecutive sections join: a section placed between them ends the run there.
 - Reduced motion or no JavaScript: ordinary stacked sections.
 
 ### Focal points and text-safe areas
