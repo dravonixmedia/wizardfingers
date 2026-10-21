@@ -197,6 +197,28 @@ Notes:
 - `published: false` keeps a draft out of the site, sitemap and routes entirely.
 - Only add real work, with accurate roles and descriptions.
 
+## Add a link-only project
+
+For real work you want to list without images or a detail page (e.g. a live website),
+add an entry to `src/content/link-projects.ts`:
+
+```ts
+{
+  title: 'Timeless Knot',
+  type: 'Website',                 // short type label shown under the name
+  category: 'digital',             // 'motion' | 'intelligence' | 'digital'
+  url: 'https://timelessknot.in/', // must be https
+  label: 'Visit Website',          // link text; an ↗ arrow is added automatically
+  published: true,
+  order: 10,
+},
+```
+
+It appears in that discipline section as name, type and a "Visit Website ↗" link that
+opens in a new tab (`rel="noopener noreferrer"`). Link-only projects don't create a page,
+don't appear in Selected Work and aren't added to the sitemap. To give a project a full
+page later, move it to `projects.ts` with a cover image.
+
 ## Change order and featured status
 
 - `order`: lower numbers come first in **Selected Work** and in "Next project" links.

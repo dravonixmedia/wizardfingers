@@ -47,12 +47,22 @@ function openingEntrance() {
 
 function reveals() {
   const items = gsap.utils.toArray<HTMLElement>('[data-reveal]');
-  gsap.set(items, { autoAlpha: 0, y: 36 });
-  ScrollTrigger.batch(items, {
-    start: 'top 90%',
-    once: true,
-    onEnter: (batch) =>
-      gsap.to(batch, { autoAlpha: 1, y: 0, duration: 1.1, ease: EASE, stagger: 0.08, clearProps: 'transform' }),
+  // Opacity only — never `visibility: hidden` (autoAlpha), which would remove links and
+  // buttons inside not-yet-revealed content from the keyboard Tab order.
+  gsap.set(items, { opacity: 0, y: 36 });
+  const revealed = new WeakSet<Element>();
+  const show = (els: Element[], vars: gsap.TweenVars = {}) => {
+    const fresh = els.filter((el) => !revealed.has(el));
+    fresh.forEach((el) => revealed.add(el));
+    if (fresh.length) gsap.to(fresh, { opacity: 1, y: 0, duration: 1.1, ease: EASE, stagger: 0.08, clearProps: 'opacity,transform', ...vars });
+  };
+  ScrollTrigger.batch(items, { start: 'top 90%', once: true, onEnter: (batch) => show(batch) });
+
+  // Keyboard users may reach content before it scrolls into the reveal zone: show it at
+  // once so the focus ring is never on transparent content.
+  document.addEventListener('focusin', (e) => {
+    const host = (e.target as Element | null)?.closest?.('[data-reveal]');
+    if (host) show([host], { duration: 0.25, stagger: 0 });
   });
 
   // Project imagery: a cinematic "gate" opening.
