@@ -39,7 +39,7 @@ import { experimentsCopy, publishedExperiments } from '../content';
                       <Media src={e.image.src} alt={e.image.alt} focal={e.image.focal} sizes="(max-width: 720px) 100vw, 33vw" widths={[480, 768, 1080]} />
                     ) : (
                       <div class="lab__type" aria-hidden="true">
-                        <span class="serif">{e.title}</span>
+                        <span>{e.title}</span>
                       </div>
                     )}
                   </div>
@@ -133,8 +133,10 @@ import { experimentsCopy, publishedExperiments } from '../content';
     place-items: center;
     padding: 12%;
     text-align: center;
-    font-size: clamp(1.6rem, 1rem + 2vw, 3rem);
-    line-height: 1;
+    font-size: clamp(1.4rem, 1rem + 1.4vw, 2.25rem);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
     background: radial-gradient(70% 70% at 30% 20%, rgb(66 117 255 / 0.25), transparent 70%), var(--c-charcoal);
   }
 

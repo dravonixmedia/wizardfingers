@@ -3,8 +3,6 @@ import BackgroundMedia from './BackgroundMedia.astro';
 import { about, backgrounds } from '../content';
 
 const media = backgrounds.sections.about;
-const [first, ...rest] = about.headline.split(' the ');
-const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
 ---
 
 <section class:list={['about', !media && 'about--no-media']} id="about" aria-labelledby="about-title">
@@ -13,10 +11,7 @@ const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
   <div class="wrap about__inner">
     <div class="about__copy" data-reveal>
       <p class="label label--accent">{about.label}</p>
-      <h2 id="about-title" class="about__title">
-        <span class="display">{first}</span>
-        {emphasis && <span class="serif">{emphasis}</span>}
-      </h2>
+      <h2 id="about-title" class="about__title display">{about.headline}</h2>
       <p class="about__body">{about.body}</p>
     </div>
     {
@@ -63,30 +58,19 @@ const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
 
   .about__copy {
     display: grid;
-    gap: 20px;
-    max-width: 46rem;
+    gap: 18px;
+    max-width: 34rem;
   }
 
   .about__title {
-    font-weight: 400;
-    font-size: clamp(2.9rem, 1.4rem + 5vw, 6.75rem);
-    line-height: 0.92;
-  }
-
-  .about__title .display {
-    display: block;
-  }
-
-  .about__title .serif {
-    display: block;
-    font-size: 1.06em;
-    color: rgb(242 240 234 / 0.82);
+    font-size: var(--h-sub);
+    line-height: 1.06;
   }
 
   .about__body {
-    max-width: 52ch;
-    font-size: var(--step-1);
-    line-height: 1.55;
+    max-width: 44ch;
+    font-size: var(--body-l);
+    line-height: 1.6;
     color: rgb(242 240 234 / 0.88);
   }
 
@@ -97,8 +81,9 @@ const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
     background: linear-gradient(90deg, rgb(10 10 11 / 0.85) 0%, rgb(10 10 11 / 0.6) 30%, rgb(10 10 11 / 0.2) 46%, transparent 54%);
   }
 
+  /* Narrower than the image's dark half, so the portrait keeps its breathing room. */
   .about:not(.about--no-media) .about__copy {
-    max-width: min(46rem, 50%);
+    max-width: min(34rem, 42%);
   }
 
   /* Narrower screens: no room beside the face, so the portrait sits above the text at its
@@ -131,7 +116,7 @@ const emphasis = rest.length ? `the ${rest.join(' the ')}` : '';
       padding-top: 0;
     }
     .about:not(.about--no-media) .about__copy {
-      max-width: 46rem;
+      max-width: 34rem;
     }
   }
 

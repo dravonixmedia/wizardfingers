@@ -13,7 +13,7 @@ import { site } from '../content';
       <p class="label label--accent" data-hero-in>Error 404</p>
       <h1 id="nf-title" data-hero-in>
         <span class="display nf__big">Cut.</span>
-        <span class="serif nf__sub">This scene didn’t make the final edit.</span>
+        <span class="nf__sub">This scene didn’t make the final edit.</span>
       </h1>
       <p class="nf__text" data-hero-in>The page you’re looking for has moved, been renamed or never existed.</p>
       <div class="nf__actions" data-hero-in>
@@ -65,14 +65,16 @@ import { site } from '../content';
   }
 
   .nf__big {
-    font-size: clamp(7rem, 4rem + 22vw, 26rem);
-    line-height: 0.8;
+    font-size: clamp(4.5rem, 2.5rem + 12vw, 13rem);
+    line-height: 0.95;
   }
 
   .nf__sub {
-    margin-top: 0.35em;
-    font-size: var(--step-3);
-    line-height: 1;
+    margin-top: 0.5em;
+    font-size: var(--h-sub);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
     color: var(--c-gray);
   }
 

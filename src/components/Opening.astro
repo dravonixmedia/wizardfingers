@@ -6,12 +6,10 @@ const { stages } = opening;
 const shared = backgrounds.opening.shared;
 const stageMedia = stages.map((s) => backgrounds.opening.stages[s.id]);
 const hasVideo = [shared, ...stageMedia].some((m) => m?.type === 'video');
-// One headline size for all stages, derived from the longest headline (Anton averages ≈ 0.38em per character).
-const fit = Math.max(...stages.map((s) => s.headline.length)) * 0.39;
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
-<section class="opening" aria-labelledby="opening-title" style={`--stages:${stages.length};--fit:${fit}`} data-opening>
+<section class="opening" aria-labelledby="opening-title" style={`--stages:${stages.length}`} data-opening>
   <div class="opening__frame">
     {
       shared && (
@@ -89,7 +87,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
      The three disciplines are presented as a clear vertical sequence.
      --------------------------------------------------------------------- */
   .opening {
-    --headline: min(calc((100vw - 2 * var(--gutter)) / var(--fit)), 26svh, 15rem);
     position: relative;
     background: var(--c-black);
   }
@@ -105,6 +102,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
     z-index: -1;
   }
 
+  /* Identity, headline and supporting line form one compact, centre-aligned group, with the
+     same placement and size on every stage. */
   .opening__identity {
     position: relative;
     z-index: 2;
@@ -117,11 +116,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
 
   .opening__name {
-    font-family: var(--f-display);
-    font-size: clamp(1.5rem, 1.1rem + 1.2vw, 2.25rem);
-    line-height: 1;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: clamp(1.125rem, 1rem + 0.45vw, 1.5rem);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
   }
 
   .opening__role {
@@ -152,16 +150,17 @@ const pad = (n: number) => String(n).padStart(2, '0');
     z-index: 1;
     display: grid;
     justify-items: center;
-    gap: 10px;
+    gap: clamp(10px, 1.2vw, 16px);
     text-align: center;
   }
 
   .stage__headline {
     font-family: var(--f-display);
-    font-size: var(--headline);
-    line-height: 0.86;
-    padding-bottom: 0.12em; /* room for descenders (g, y) above the supporting line */
-    letter-spacing: -0.005em;
+    font-size: var(--h-hero);
+    font-weight: 600;
+    line-height: 1;
+    padding-bottom: 0.06em; /* room for descenders (g, y) above the supporting line */
+    letter-spacing: -0.035em;
     white-space: nowrap;
     color: var(--c-ivory);
   }
@@ -307,6 +306,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
     height: calc(100svh + var(--stages) * 80svh);
   }
 
+  /* The text group is centred vertically between the header and the bottom controls: equal
+     auto margins above the identity and above the control bar. */
   :global(html.opening-pinned) .opening__frame {
     position: sticky;
     top: 0;
@@ -315,6 +316,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    padding-top: var(--header-h);
     overflow: hidden;
   }
 
@@ -327,8 +329,9 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
 
   :global(html.opening-pinned) .opening__identity {
+    margin-top: auto;
     padding-top: 0;
-    padding-bottom: clamp(10px, 1.6svh, 20px);
+    padding-bottom: clamp(6px, 1.2svh, 14px);
     z-index: 3;
   }
 
@@ -398,6 +401,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
 
   :global(html.opening-pinned) .opening__bar {
+    margin-top: auto;
     padding-top: clamp(12px, 2.4svh, 28px);
   }
 

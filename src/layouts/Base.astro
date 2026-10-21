@@ -1,10 +1,8 @@
 ---
-import '@fontsource/anton/400.css';
 import '@fontsource-variable/inter/wght.css';
+import interLatin from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
 import '@fontsource-variable/jetbrains-mono/wght.css';
-import '@fontsource/instrument-serif/400-italic.css';
 import '../styles/global.css';
-import antonLatin from '@fontsource/anton/files/anton-latin-400-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../content';
@@ -53,12 +51,12 @@ const ogImageUrl = new URL(ogImage, site.url).toString();
     <meta name="theme-color" content="#0A0A0B" />
     <meta name="color-scheme" content="dark" />
 
+    <link rel="preload" href={interLatin} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="sitemap" href="/sitemap.xml" />
-    <link rel="preload" href={antonLatin} as="font" type="font/woff2" crossorigin />
 
     <meta property="og:site_name" content={site.brand} />
     <meta property="og:type" content={ogType} />

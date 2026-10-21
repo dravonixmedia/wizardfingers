@@ -11,7 +11,7 @@ Live domain: <https://wizardfingers.com>
 | --- | --- |
 | Site | [Astro](https://astro.build) 7, static output, TypeScript |
 | Motion | Native scroll + CSS `position: sticky` for the three-stage opening; GSAP 3 + ScrollTrigger for reveals/parallax (loaded only when reduced motion is off) |
-| Fonts | Self-hosted via Fontsource (all SIL OFL): Anton, Inter, JetBrains Mono, Instrument Serif |
+| Fonts | Self-hosted via Fontsource (all SIL OFL): Inter (headings and body), JetBrains Mono (labels) |
 | Images | `astro:assets` → responsive AVIF/WebP with explicit dimensions |
 | Hosting | Cloudflare Workers Static Assets, Worker `wizardfingers` (`worker/index.ts`) |
 

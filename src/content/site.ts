@@ -91,7 +91,7 @@ export const features: FeatureCopy[] = [
 
 export const work = {
   label: 'Selected Work',
-  headline: 'Selected Work',
+  headline: 'Selected work',
   intro: 'Films, AI studies and digital builds.',
   emptyTitle: 'New work is on its way.',
   emptyText: 'Films, AI studies and digital builds will appear here as they are published.',
