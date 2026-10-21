@@ -1,0 +1,231 @@
+---
+import { dimensionLabels } from '../content';
+import { thumbSrcset, thumbUrl, type MediaEntry, type MediaImageFile } from '../lib/project-media';
+
+interface Props {
+  entries: MediaEntry[];
+}
+
+const { entries } = Astro.props;
+const SIZES = '(max-width: 599px) 100vw, (max-width: 1023px) 50vw, 34vw';
+const thumbSrc = (f: MediaImageFile) => thumbUrl(f.thumb, f.thumb.widths.find((w) => w >= 960) ?? f.thumb.widths.at(-1)!);
+const kindLabel = (e: MediaEntry) => `${dimensionLabels[e.category]} · ${e.kind === 'video' ? 'Video' : 'Image'}`;
+
+/** What the viewer needs, kept on the card so filtering and navigation stay in step. */
+const viewerData = (e: MediaEntry) =>
+  JSON.stringify(
+    e.kind === 'image'
+      ? { kind: 'image', title: e.title, label: kindLabel(e), w: e.width, h: e.height, src: thumbSrc(e.image), srcset: thumbSrcset(e.image.thumb) }
+      : { kind: 'video', title: e.title, label: kindLabel(e), w: e.width, h: e.height, sources: e.sources, poster: e.poster ? thumbUrl(e.poster.thumb, e.poster.thumb.widths.at(-1)!) : undefined },
+  );
+---
+
+<ul class="work__media" aria-label="Films and images" data-media-grid>
+  {
+    entries.map((e) => {
+      const still = e.kind === 'image' ? e.image : e.poster;
+      return (
+        <li class="wm" data-card data-category={e.category} style={`--r:${(e.width / e.height).toFixed(4)}`}>
+          {/* Without JavaScript the link opens the original file. */}
+          <a class="wm__open" href={e.kind === 'image' ? e.image.src : e.sources.at(-1)!.src} data-viewer-open={viewerData(e)}>
+            <span class="wm__frame" style={`aspect-ratio:${e.width} / ${e.height}`}>
+              {still ? (
+                <img
+                  class="wm__img"
+                  src={thumbSrc(still)}
+                  srcset={thumbSrcset(still.thumb)}
+                  sizes={SIZES}
+                  width={still.width}
+                  height={still.height}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <span class="wm__blank" aria-hidden="true">
+                  <span class="wm__blank-title">{e.title}</span>
+                </span>
+              )}
+              {e.kind === 'video' && (
+                <span class:list={['wm__play', !still && 'wm__play--centre']} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18"><path d="M8 5.5v13l11-6.5z" fill="currentColor" /></svg>
+                </span>
+              )}
+            </span>
+            <span class="wm__meta">
+              <span class="wm__title">{e.title}</span>
+              <span class="wm__kind label">{kindLabel(e)}</span>
+            </span>
+            <span class="sr-only"> — {e.kind === 'video' ? 'play video' : 'view image'}</span>
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>
+
+<style>
+  /* Justified rows: every item keeps its own proportions (no crops). Each item's basis and
+     growth are proportional to its aspect ratio, so items sharing a row share one height. */
+  .work__media {
+    --row: clamp(220px, 30vw, 440px);
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(28px, 3vw, 44px) clamp(12px, 1.6vw, 24px);
+  }
+
+  /* Keeps a short last row at the base height instead of stretching it. */
+  .work__media::after {
+    content: '';
+    flex: 999 1 0;
+  }
+
+  .wm {
+    flex: var(--r) 1 calc(var(--r) * var(--row));
+    min-width: 0;
+  }
+
+  .wm[hidden] {
+    display: none;
+  }
+
+  .wm__open {
+    display: grid;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .wm__frame {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--c-charcoal);
+  }
+
+  .wm__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* same proportions as the frame: nothing is cropped */
+    transition:
+      transform var(--t-med) var(--ease-out),
+      opacity var(--t-med) var(--ease-out);
+  }
+
+  /* No poster: a deliberate dark title card. */
+  .wm__blank {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    padding: clamp(14px, 1.6vw, 22px);
+    background:
+      radial-gradient(120% 80% at 50% 30%, rgb(242 240 234 / 0.06), transparent 60%),
+      linear-gradient(180deg, #151517 0%, #0c0c0d 100%);
+  }
+
+  .wm__blank-title {
+    font-family: var(--f-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgb(242 240 234 / 0.62);
+  }
+
+  .wm__play {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgb(242 240 234 / 0.5);
+    border-radius: 50%;
+    background: rgb(10 10 11 / 0.55);
+    color: var(--c-ivory);
+    backdrop-filter: blur(6px);
+    transition:
+      background-color var(--t-fast),
+      color var(--t-fast),
+      border-color var(--t-fast);
+  }
+
+  .wm__play--centre {
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    translate: -50% -50%;
+  }
+
+  .wm__play svg {
+    translate: 1px 0;
+  }
+
+  .wm__meta {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .wm__title {
+    overflow: hidden;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .wm__kind {
+    color: rgb(242 240 234 / 0.6);
+  }
+
+  .wm__open:hover .wm__img {
+    transform: scale(1.02);
+  }
+
+  .wm__open:hover .wm__play,
+  .wm__open:focus-visible .wm__play {
+    background: var(--c-ivory);
+    border-color: var(--c-ivory);
+    color: var(--c-black);
+  }
+
+  .wm__open:focus-visible {
+    outline: 2px solid var(--c-blue);
+    outline-offset: 6px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wm__img {
+      transition: none;
+    }
+    .wm__open:hover .wm__img {
+      transform: none;
+    }
+  }
+
+  /* Phones: one item per row, full width; tall items are capped so the next one stays in reach. */
+  @media (max-width: 599px) {
+    .work__media::after {
+      display: none;
+    }
+    .wm {
+      flex: 1 1 100%;
+    }
+    .wm__frame {
+      width: min(100%, calc(72svh * var(--r)));
+      margin-inline: auto;
+    }
+    .wm__meta {
+      width: min(100%, calc(72svh * var(--r)));
+      margin-inline: auto;
+    }
+  }
+</style>

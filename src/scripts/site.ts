@@ -6,6 +6,7 @@ import { initChapters } from './chapters';
 import { initWork } from './work';
 import { initMedia } from './media';
 import { initShowreel } from './showreel';
+import { initViewer } from './viewer';
 import { prefersReducedMotion } from './env';
 
 declare global {
@@ -22,6 +23,7 @@ function boot() {
   initWork();
   initMedia();
   initShowreel();
+  initViewer();
   initOpening();
   // Before backgrounds and motion: it turns the sections into curtain panels and takes over
   // their entrance and background parallax.

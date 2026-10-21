@@ -53,9 +53,12 @@ src/
   media/          images optimised at build time (backgrounds/, projects/<slug>/, experiments/)
   components/     Opening (pinned three-stage intro), BackgroundMedia, Work, ProjectCard,
                   FeatureSection (Motion/Intelligence/Digital), About, Contact, FilmPlayer…
-  pages/          index, work/[slug] (one page per published project), 404, sitemap.xml, robots.txt
+  pages/          index, work/[slug] (one page per published project), media/thumbs (build-time
+                  thumbnails for uploaded work), 404, sitemap.xml, robots.txt
+  lib/            media helpers, project-media.ts (folder discovery for Selected Work)
   scripts/        client-side behaviour (opening, backgrounds, menu, filters, media, motion)
-public/           favicons, og/default.png, media/ (videos, incl. media/backgrounds/ — served as-is)
+public/           favicons, og/default.png, media/ (videos, incl. media/backgrounds/ — served as-is);
+                  media/projects/{motion,intelligence}/ — upload to publish in Selected Work
 worker/           Cloudflare Worker entry (redirect, headers, media byte ranges) and helpers
 media-source/     original media masters (e.g. HEVC hero video) — not built or deployed
 docs/             CONTENT.md, DEPLOYMENT.md

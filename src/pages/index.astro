@@ -7,7 +7,8 @@ import Experiments from '../components/Experiments.astro';
 import About from '../components/About.astro';
 import Contact from '../components/Contact.astro';
 import ShowreelDialog from '../components/ShowreelDialog.astro';
-import { features } from '../content';
+import MediaViewer from '../components/MediaViewer.astro';
+import { features, mediaProjects } from '../content';
 import { siteJsonLd } from '../lib/seo';
 
 // Alternate the text-safe area so copy never sits on the same focal region twice in a row.
@@ -22,4 +23,5 @@ const layouts = ['bottom-left', 'center-right', 'top-left'] as const;
   <About />
   <Contact />
   <ShowreelDialog />
+  {mediaProjects.length > 0 && <MediaViewer />}
 </Base>

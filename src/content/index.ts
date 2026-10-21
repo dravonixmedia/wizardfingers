@@ -8,6 +8,7 @@ import { backgrounds } from './backgrounds';
 import { site } from './site';
 import type { BackgroundMedia, ContactLinks, Dimension, Experiment, FilmSource, LinkProject, MediaImage, Project } from './types';
 import { imageExists } from '../lib/media';
+import { discoverProjectMedia, MAX_FILE_BYTES, type MediaEntry } from '../lib/project-media';
 
 export * from './site';
 export { backgrounds } from './backgrounds';
@@ -171,6 +172,14 @@ validateExperiments(sourceExperiments);
 validateLinkProjects(allLinkProjects);
 validateSite();
 
+// Folder-based work: every supported file in public/media/projects/<motion|intelligence>/.
+const discovered = await discoverProjectMedia({
+  warn: (m) => console.warn(`[wizardfingers] ${m}`),
+});
+for (const f of discovered.oversized) {
+  fail(`public/media/projects/${f} is larger than ${MAX_FILE_BYTES / 1024 / 1024} MiB (the hosting limit per file): compress or shorten it`);
+}
+
 if (problems.length) {
   const message = `Content validation failed:\n  - ${problems.join('\n  - ')}`;
   if (import.meta.env.DEV) console.warn(`\n[wizardfingers] ${message}\n`);
@@ -203,6 +212,9 @@ export function nextProject(slug: string) {
   if (i < 0 || publishedProjects.length < 2) return undefined;
   return publishedProjects[(i + 1) % publishedProjects.length];
 }
+
+/** Media published by upload (public/media/projects/<category>/), by category, then filename. */
+export const mediaProjects: MediaEntry[] = discovered.entries;
 
 /** Published link-only projects in a dimension, by order. */
 const byOrderTitle = (a: LinkProject, b: LinkProject) => a.order - b.order || a.title.localeCompare(b.title);
