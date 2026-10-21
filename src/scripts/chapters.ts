@@ -1,165 +1,173 @@
 import { prefersReducedMotion } from './env';
 
 /**
- * Continuous media chapters: Motion → Intelligence → Digital → About.
+ * Curtain chapters: Motion → Intelligence → Digital → About.
  *
- * Progressive enhancement (JS on, motion allowed): the sections' own background layers move
- * into one sticky full-screen frame behind them, so the media frame stays put while the text
- * scrolls over it. Each background crossfades in as its section's top edge passes from 75% to
- * 25% of the viewport, and each section's copy rises in on entry and fades out on exit.
- * Native scrolling drives everything: no wheel/touch interception, no timers. Scrolling back
- * reverses it exactly, because every state is a function of scroll position.
+ * Progressive enhancement (JS on, motion allowed). Each section stays whole — background,
+ * overlay, text and controls — and becomes an opaque sticky panel inside its own scroll track.
+ * While a chapter holds, the next panel rises from the bottom and covers it like a curtain; the
+ * covered panel stays pinned underneath, so it never moves while it is being covered.
  *
- * About joins only from 1024px, where its portrait sits beside the biography; below that its
- * stacked portrait layout is kept and it simply follows the chapters. Without JS or with
- * reduced motion, every section keeps its own background (the static layout).
+ * Native scrolling drives everything: CSS sticky positioning plus this script setting track
+ * heights and a subtle background parallax from the scroll position. No wheel/touch
+ * interception, snapping or timers, so scrolling back reverses it exactly.
+ *
+ * Per chapter: a rise (one viewport of scroll) and a reading hold (HOLD viewports). Panels
+ * taller than the viewport scroll through all their content first, then pin by their bottom
+ * edge, so long content stays fully readable. Without JS or with reduced motion the sections
+ * are ordinary stacked sections.
  */
 const ORDER = ['motion', 'intelligence', 'digital', 'about'];
-const WIDE = '(min-width: 1024px)';
+/** Reading hold after a chapter has fully risen, in viewport heights (rise + hold ≈ 1.9 vh). */
+const HOLD = 0.9;
+/** Background parallax travel, as a fraction of the background's height (each way). */
+const PARALLAX = 0.018;
+/** Background scale that keeps every edge covered across the parallax travel. */
+const PARALLAX_SCALE = 1 + PARALLAX * 2 + 0.004;
 
 const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
-const smooth = (v: number) => v * v * (3 - 2 * v);
-/** Peak darkness of the charcoal veil halfway through a crossfade. */
-const VEIL = 0.45;
+
+interface Chapter {
+  section: HTMLElement;
+  track: HTMLElement;
+  bg: HTMLElement | null;
+  /** Scroll positions where the panel enters at the bottom and where it is gone (covered or left). */
+  enter: number;
+  leave: number;
+}
 
 export function initChapters() {
   if (prefersReducedMotion()) return;
-  const wide = window.matchMedia(WIDE);
-  let teardown: (() => void) | undefined;
-  const build = () => {
-    teardown?.();
-    teardown = setup(wide.matches);
-    document.dispatchEvent(new CustomEvent('wf:layout'));
-    document.dispatchEvent(new CustomEvent('wf:bg-refresh'));
-  };
-  build();
-  wide.addEventListener('change', build);
-}
 
-function setup(includeAbout: boolean): (() => void) | undefined {
   // Consecutive sections only (e.g. published Experiments between Digital and About end the run).
   const sections: HTMLElement[] = [];
   let el = document.getElementById(ORDER[0]);
   for (const id of ORDER) {
-    if (id === 'about' && !includeAbout) break;
-    if (!el || el.id !== id || !el.querySelector(':scope > [data-bg]')) break;
+    if (!el || el.id !== id) break;
     sections.push(el);
     el = el.nextElementSibling as HTMLElement | null;
   }
-  if (sections.length < 2) return undefined;
+  if (sections.length < 2) return;
 
-  const wrap = document.createElement('div');
-  wrap.className = 'chapters';
-  // The sticky frame lives in a track exactly as tall as the chapters, so it releases with the
-  // last chapter instead of lingering behind the next section.
-  const track = document.createElement('div');
-  track.className = 'chapters__track';
-  track.setAttribute('aria-hidden', 'true');
-  const stage = document.createElement('div');
-  stage.className = 'chapters__stage';
-  // Darkens the brief overlap between two backgrounds so it never reads as a muddy double image.
-  const veil = document.createElement('div');
-  veil.className = 'chapters__veil';
-  track.append(stage);
-  sections[0].before(wrap);
-  wrap.append(track, ...sections);
+  const root = document.createElement('div');
+  root.className = 'curtains';
+  sections[0].before(root);
 
-  const layers = sections.map((s) => {
-    const bg = s.querySelector<HTMLElement>(':scope > [data-bg]')!;
-    // The frame is stable: no scroll parallax inside it.
-    bg.removeAttribute('data-parallax-bg');
-    const layer = document.createElement('div');
-    layer.className = 'chapters__layer';
-    layer.dataset.chapterLayer = '';
-    layer.dataset.bgFor = s.id; // lets the section's Pause/Play control find its video
-    layer.append(bg);
-    stage.append(layer);
-    s.classList.add('is-chapter');
-    return layer;
-  });
-  stage.append(veil);
-
-  // The copy is driven here instead of by the one-shot reveal.
-  const copies = sections
-    .map((s) => s.querySelector<HTMLElement>('[data-reveal]'))
-    .filter((c): c is HTMLElement => Boolean(c));
-  copies.forEach((c) => {
-    c.removeAttribute('data-reveal');
-    c.dataset.chapterCopy = '';
+  const chapters: Chapter[] = sections.map((section) => {
+    const track = document.createElement('div');
+    track.className = 'curtain';
+    track.dataset.curtain = section.id;
+    root.append(track);
+    track.append(section);
+    section.classList.add('curtain__panel');
+    // The section is revealed as a whole: no separate text entrance, no GSAP parallax.
+    section.querySelector('[data-reveal]')?.removeAttribute('data-reveal');
+    const bg = section.querySelector<HTMLElement>(':scope > [data-bg]');
+    bg?.removeAttribute('data-parallax-bg');
+    return { section, track, bg, enter: 0, leave: 0 };
   });
 
-  let active = '';
+  let vh = window.innerHeight;
+  let covered = '';
   let frame = 0;
+
+  /** Track heights and sticky offsets; depends only on panel and viewport heights. */
+  const layout = () => {
+    vh = window.innerHeight;
+    chapters.forEach(({ section, track }, k) => {
+      const panel = section.offsetHeight;
+      const top = Math.min(0, vh - panel); // taller panels pin by their bottom edge
+      const last = k === chapters.length - 1;
+      // Non-last tracks overlap the next by one viewport, so the next panel rises while this one
+      // is still pinned; this one stays pinned until it is completely covered.
+      const height = HOLD * vh + (last ? vh : 2 * vh) - top;
+      section.style.top = `${top}px`;
+      track.style.height = `${Math.round(height)}px`;
+      track.style.marginBottom = last ? '' : `${-vh}px`;
+    });
+    chapters.forEach((c, k) => {
+      const docTop = c.track.getBoundingClientRect().top + window.scrollY;
+      const next = chapters[k + 1];
+      c.enter = docTop - vh;
+      c.leave = next ? next.track.getBoundingClientRect().top + window.scrollY : docTop + c.track.offsetHeight;
+    });
+  };
 
   const update = () => {
     frame = 0;
-    const vh = window.innerHeight;
-
-    // Later layers sit on top: each fades in over the previous one, so there is never an
-    // empty frame between two backgrounds. The boundary travels from 75% to 25% of the
-    // viewport; the new background eases in over the middle of that, under a veil that peaks
-    // halfway and clears again.
-    let dim = 0;
-    const opacity = sections.map((s, k) => {
-      if (k === 0) return 1;
-      const t = clamp((vh * 0.75 - s.getBoundingClientRect().top) / (vh * 0.5));
-      dim = Math.max(dim, VEIL * Math.sin(Math.PI * t));
-      return smooth(clamp((t - 0.25) / 0.5));
-    });
-    veil.style.opacity = dim < 0.005 ? '0' : dim.toFixed(3);
-    let covered = false;
-    const visible: string[] = [];
-    for (let k = layers.length - 1; k >= 0; k--) {
-      const on = opacity[k] > 0 && !covered;
-      layers[k].style.opacity = opacity[k] === 1 ? '' : opacity[k].toFixed(3);
-      layers[k].classList.toggle('is-active', on);
-      if (on) visible.push(sections[k].id);
-      if (opacity[k] >= 1) covered = true;
-    }
-    const key = visible.join();
-    if (key !== active) {
-      active = key;
-      document.dispatchEvent(new CustomEvent('wf:bg-refresh')); // play/pause videos to match
-    }
-
-    // Copy: rises in from below, fades out towards the top. Focused content is always shown.
-    for (const c of copies) {
-      if (c.matches(':focus-within')) {
-        c.style.opacity = '';
-        c.style.transform = '';
-        continue;
+    const next: string[] = [];
+    const y = window.scrollY;
+    chapters.forEach(({ section, bg, enter, leave }, k) => {
+      // Covered once the next panel has fully risen: its video is no longer visible.
+      const above = chapters[k + 1]?.section.getBoundingClientRect();
+      const isCovered = Boolean(above && above.top <= 0.5 && above.bottom >= vh - 0.5);
+      section.toggleAttribute('data-chapter-covered', isCovered);
+      if (isCovered) next.push(section.id);
+      // Parallax over the panel's whole time on screen: the background drifts up slightly
+      // from entering at the bottom until it is covered (or, for the last, has left).
+      if (bg) {
+        const p = clamp((y - enter) / Math.max(1, leave - enter));
+        const shift = (0.5 - p) * 2 * PARALLAX * 100;
+        bg.style.transform = `translate3d(0, ${shift.toFixed(3)}%, 0) scale(${PARALLAX_SCALE})`;
       }
-      const r = c.getBoundingClientRect();
-      const enter = clamp((vh * 0.92 - r.top) / (vh * 0.28));
-      const exit = clamp((r.bottom - vh * 0.08) / (vh * 0.28));
-      const v = Math.min(enter, exit);
-      const dy = enter <= exit ? (1 - enter) * 48 : -(1 - exit) * 32;
-      c.style.opacity = v >= 1 ? '' : v.toFixed(3);
-      c.style.transform = v >= 1 ? '' : `translate3d(0, ${dy.toFixed(1)}px, 0)`;
+    });
+    const key = next.join();
+    if (key !== covered) {
+      covered = key;
+      document.dispatchEvent(new CustomEvent('wf:bg-refresh')); // pause covered videos
     }
   };
 
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(update);
   };
+  const relayout = () => {
+    layout();
+    schedule();
+  };
+
+  layout();
   update();
   window.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', schedule);
-  wrap.addEventListener('focusin', schedule);
-  wrap.addEventListener('focusout', schedule);
+  window.addEventListener('resize', relayout);
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(relayout);
+    chapters.forEach(({ section }) => ro.observe(section));
+  }
 
-  return () => {
-    cancelAnimationFrame(frame);
-    window.removeEventListener('scroll', schedule);
-    window.removeEventListener('resize', schedule);
-    sections.forEach((s, k) => {
-      s.prepend(layers[k].firstElementChild!);
-      s.classList.remove('is-chapter');
-    });
-    copies.forEach((c) => {
-      c.style.opacity = '';
-      c.style.transform = '';
-    });
-    wrap.replaceWith(...sections);
+  /** Scroll position at which a chapter has fully risen and starts its hold. */
+  const holdStart = (c: Chapter) => c.track.getBoundingClientRect().top + window.scrollY - Math.min(0, vh - c.section.offsetHeight);
+
+  // In-page links to a chapter land at the start of its hold (anchors on sticky panels would
+  // otherwise resolve against their pinned position).
+  document.addEventListener('click', (e) => {
+    const a = (e.target as Element | null)?.closest?.<HTMLAnchorElement>('a[href^="#"]');
+    const c = a && chapters.find((ch) => ch.section.id === a.hash.slice(1));
+    if (!c) return;
+    e.preventDefault();
+    window.scrollTo({ top: holdStart(c), behavior: 'smooth' });
+    history.pushState(null, '', `#${c.section.id}`);
+  });
+
+  // Keyboard focus inside a panel that is covered (or not yet risen) brings that chapter up.
+  root.addEventListener('focusin', (e) => {
+    const c = chapters.find((ch) => ch.section.contains(e.target as Node));
+    if (!c) return;
+    const r = (e.target as HTMLElement).getBoundingClientRect();
+    const k = chapters.indexOf(c);
+    const above = chapters[k + 1]?.section.getBoundingClientRect();
+    const hidden = (above && above.top < r.bottom) || r.top < 0 || r.bottom > vh;
+    if (hidden) window.scrollTo({ top: holdStart(c), behavior: 'instant' });
+  });
+
+  // A deep link (e.g. /#about) resolves after the tracks exist, and again after the browser's
+  // own hash scroll on load (which targets the pinned panel).
+  const toHash = () => {
+    const target = chapters.find((ch) => `#${ch.section.id}` === window.location.hash);
+    if (target) window.scrollTo({ top: holdStart(target), behavior: 'instant' });
   };
+  toHash();
+  if (document.readyState !== 'complete') window.addEventListener('load', () => requestAnimationFrame(toHash), { once: true });
+
+  document.dispatchEvent(new CustomEvent('wf:layout'));
 }

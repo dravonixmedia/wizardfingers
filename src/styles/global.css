@@ -406,66 +406,41 @@ ol {
   color: var(--c-gray);
 }
 
-/* Section chapters (scripts/chapters.ts; JS on, motion allowed) ------------
-   One sticky full-screen frame holds the Motion → Intelligence → Digital (→ About) backgrounds;
-   the sections scroll over it and their backgrounds crossfade. */
+/* Curtain chapters (scripts/chapters.ts; JS on, motion allowed) -----------
+   Motion → Intelligence → Digital → About: each section is an opaque sticky panel in its own
+   scroll track; the next one rises over it while it stays pinned. Track heights and sticky
+   offsets are set by the script. */
 
-.chapters {
+.curtains {
   position: relative;
 }
 
-.chapters__track {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
+.curtain {
+  position: relative;
 }
 
-.chapters__stage {
+.curtains .curtain > section.curtain__panel {
   position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100svh;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100lvh;
   background: var(--c-black);
+  /* A full-screen panel lands at the very top (the fixed header overlays it, as in its hold),
+     so the browser's own fragment scroll (/#digital) matches the script's hold position. */
+  scroll-margin-top: calc(-1 * (var(--header-h) + 16px));
+  /* The rising edge casts a soft shadow onto the section it covers. */
+  box-shadow: 0 -28px 56px rgb(0 0 0 / 0.45);
 }
 
-/* Extends to the large viewport so mobile browser bars never reveal a gap. */
-.chapters__layer {
-  position: absolute;
-  inset: 0 0 calc(100svh - 100lvh);
+.curtain__panel > .bg {
+  will-change: transform;
 }
 
-.chapters__layer > .bg {
-  transform: none !important;
-}
-
-/* The approved About framing starts below the fixed header, as in its own section. */
-.chapters__layer[data-bg-for='about'] {
-  top: var(--header-h);
-}
-
-.chapters__veil {
-  position: absolute;
-  inset: 0;
-  background: var(--c-black);
-  opacity: 0;
-}
-
-.chapters > section {
-  z-index: 1;
-}
-
-/* Section scrims scroll with their text over the shared frame: feather their top and bottom
-   edges so a section boundary never shows as a hard line. */
-.chapters > section > .feature__scrim,
-.chapters > section > .about__scrim {
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent);
-}
-
-[data-chapter-copy] {
-  will-change: opacity, transform;
+/* About keeps its approved framing: in a full-height panel its portrait starts below the fixed
+   header, as it did in its own section. Below 1024px its stacked layout is unchanged. */
+@media (min-width: 1024px) {
+  .curtains .curtain > #about.curtain__panel:not(.about--no-media) > .bg {
+    top: var(--header-h);
+  }
 }
 
 /* Motion: reveal hooks (only hidden while JS motion is active) ------------- */

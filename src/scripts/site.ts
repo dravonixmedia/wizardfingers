@@ -23,8 +23,8 @@ function boot() {
   initMedia();
   initShowreel();
   initOpening();
-  // Before backgrounds and motion: it moves section backgrounds into the chapter frame and
-  // takes over the section copy's entrance.
+  // Before backgrounds and motion: it turns the sections into curtain panels and takes over
+  // their entrance and background parallax.
   initChapters();
   initBackgrounds();
 

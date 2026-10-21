@@ -181,21 +181,24 @@ Workers static assets are limited to 25 MiB per file.
 
 ### Section transitions (Motion → Intelligence → Digital → About)
 
-With JavaScript on and motion allowed, `src/scripts/chapters.ts` moves the backgrounds of these
-consecutive sections into one full-screen frame that stays in place while the text scrolls over
-it (plain CSS `position: sticky`, native scrolling, no timers):
+With JavaScript on and motion allowed, `src/scripts/chapters.ts` turns these consecutive
+sections into curtain chapters (plain CSS `position: sticky`, native scrolling, no timers or
+snapping):
 
-- Each background eases in over the previous one as its section's top edge passes from 75% to
-  25% of the viewport, under a short charcoal veil (peak 45%) so the overlap never reads as a
-  muddy double image. Scrolling back reverses it exactly.
-- Each section's text rises in as it arrives and fades out as it leaves; focused content is
-  always fully shown.
-- Only the visible background's video plays; Pause/Play still works per section.
-- About joins only from 1024px wide (portrait beside the biography). Below that its stacked
-  portrait layout is kept and it follows the chapters as a normal section.
+- Each section stays whole — background, overlay, text and Pause/Play together — as an opaque
+  full-screen panel. The next one rises from the bottom and covers it like a curtain while it
+  stays pinned underneath. Scrolling back reverses it exactly.
+- Each chapter is about 1.9 viewport heights of scroll: one to rise, then a reading hold
+  (`HOLD = 0.9` in the script). Panels taller than the screen (e.g. About on phones) scroll
+  through all their content first, then pin by their bottom edge.
+- The backgrounds drift very slightly (`PARALLAX`, ±1.8%) with a matching scale so no edge is
+  ever exposed.
+- Only videos that are visible play: a section is paused once the next one fully covers it.
+- About keeps its framing (portrait below the header on wide screens, stacked layout below
+  1024px). Nav links and deep links (`/#digital`) land at the start of a chapter's hold.
 - Only consecutive sections join: a published Experiments section between Digital and About
-  ends the run at Digital, and About keeps its own background.
-- Reduced motion or no JavaScript keep the static layout: every section with its own background.
+  ends the run at Digital.
+- Reduced motion or no JavaScript: ordinary stacked sections.
 
 ### Focal points and text-safe areas
 
