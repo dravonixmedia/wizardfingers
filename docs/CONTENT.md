@@ -154,6 +154,19 @@ builds the web versions from it:
 - **Loop**: both are edited films that cut every few seconds, so each loop restarts on a clean cut.
 - Overlays: Motion 0.5 (text bottom-left), Intelligence 0.6 (bright footage, text on the right).
 
+### About portrait
+
+`sections.about` uses the approved black-and-white portrait. The original
+`media-source/backgrounds/about-hero.png` (1672×941) is untouched; `src/media/backgrounds/about-hero.png`
+is an exact copy for the responsive image pipeline (AVIF/WebP/JPG, never upscaled), and
+`about-hero-mobile.png` is an 820×941 crop of the same file (x 650–1470) around his face for phones.
+
+- Overlay `0.05`: the portrait's own low-key lighting is kept. The About scrim darkens only the
+  text column on the left and fades out before his face.
+- Below 1024px there is no room beside his face, so the portrait sits above the biography at its
+  natural proportions (phones: the portrait crop) and fades into the page.
+- When replacing it, keep the face right of centre, or adjust `position` and the crop.
+
 Recommended video: 1920×1080 (mobile 1080×1920 or 720×1280), 6–15 s seamless loop,
 H.264 MP4 with `-movflags +faststart`, no audio track, ≤ 8 MB (mobile ≤ 3 MB).
 Workers static assets are limited to 25 MiB per file.

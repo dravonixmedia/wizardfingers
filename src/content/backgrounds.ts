@@ -93,7 +93,21 @@ export const backgrounds: {
       mobilePosition: '50% 50%',
       overlay: 0.7,
     },
-    about: undefined,
+    // Approved black-and-white portrait of Pranav. Original (not deployed):
+    // media-source/backgrounds/about-hero.png (1672×941). about-hero.png is an exact copy for the
+    // responsive pipeline (AVIF/WebP/JPG, never upscaled); about-hero-mobile.png is an 820×941
+    // crop of the same file around his face for phones. His face sits right of centre; the
+    // biography is on the left. The overlay is minimal to keep the original low-key lighting:
+    // About.astro's scrim darkens only the text column.
+    about: {
+      type: 'image',
+      src: 'backgrounds/about-hero.png',
+      mobileSrc: 'backgrounds/about-hero-mobile.png',
+      alt: '',
+      position: '35% 30%',
+      mobilePosition: '50% 30%',
+      overlay: 0.05,
+    },
     contact: undefined,
   },
 };
