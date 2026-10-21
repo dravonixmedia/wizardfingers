@@ -114,6 +114,13 @@ export interface LinkProject {
   url: string;
   /** Visible link text, e.g. "Visit Website". An ↗ arrow is added automatically. */
   label: string;
+  /**
+   * Small label shown in Selected Work, e.g. "Development". When set, the project is also
+   * listed in Selected Work (name, domain, this label and the link) under All and its category.
+   */
+  workLabel?: string;
+  /** Also list it as a row in its discipline section (Motion / Intelligence / Digital). Default true. */
+  showInSection?: boolean;
   published: boolean;
   /** Lower numbers appear first. */
   order: number;

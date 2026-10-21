@@ -147,6 +147,7 @@ function validateLinkProjects(list: LinkProject[]) {
     if (!l.title?.trim() || !l.type?.trim() || !l.label?.trim()) fail(`${where}: title, type and label are required`);
     if (!DIMENSIONS.includes(l.category)) fail(`${where}: category must be one of ${DIMENSIONS.join(', ')}`);
     if (typeof l.order !== 'number') fail(`${where}: order must be a number`);
+    if (l.workLabel !== undefined && !l.workLabel.trim()) fail(`${where}: workLabel must not be empty`);
     try {
       if (new URL(l.url).protocol !== 'https:') fail(`${where}: url must use https`);
     } catch {
@@ -204,11 +205,15 @@ export function nextProject(slug: string) {
 }
 
 /** Published link-only projects in a dimension, by order. */
+const byOrderTitle = (a: LinkProject, b: LinkProject) => a.order - b.order || a.title.localeCompare(b.title);
+
+/** Link-only projects shown as rows in a discipline section. */
 export function linkProjectsFor(dimension: Dimension): LinkProject[] {
-  return allLinkProjects
-    .filter((l) => l.published && l.category === dimension)
-    .sort((a, b) => a.order - b.order || a.title.localeCompare(b.title));
+  return allLinkProjects.filter((l) => l.published && l.category === dimension && l.showInSection !== false).sort(byOrderTitle);
 }
+
+/** Link-only projects listed in Selected Work (those with a `workLabel`). */
+export const workLinkProjects: LinkProject[] = allLinkProjects.filter((l) => l.published && l.workLabel).sort(byOrderTitle);
 
 /** Published projects in a dimension, featured first, then by order. */
 export function projectsFor(dimension: Dimension) {

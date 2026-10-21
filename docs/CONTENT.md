@@ -282,19 +282,25 @@ add an entry to `src/content/link-projects.ts`:
 ```ts
 {
   title: 'Timeless Knot',
-  type: 'Website',                 // short type label shown under the name
+  type: 'Website',                 // short type label shown in its discipline section
   category: 'digital',             // 'motion' | 'intelligence' | 'digital'
   url: 'https://timelessknot.in/', // must be https
   label: 'Visit Website',          // link text; an ↗ arrow is added automatically
+  workLabel: 'Development',        // optional: also list it in Selected Work with this label
+  showInSection: false,            // optional: keep it out of its discipline section (default true)
   published: true,
   order: 10,
 },
 ```
 
-It appears in that discipline section as name, type and a "Visit Website ↗" link that
-opens in a new tab (`rel="noopener noreferrer"`). Link-only projects don't create a page,
-don't appear in Selected Work and aren't added to the sitemap. To give a project a full
-page later, move it to `projects.ts` with a cover image.
+- **Selected Work:** entries with a `workLabel` appear as a compact list (name, domain, label and
+  "Visit Website ↗") under **All** and their category filter, after any full projects. The
+  empty-state message disappears once anything is listed.
+- **Discipline section:** entries appear as a name / type / link row in their section (e.g.
+  Timeless Knot in Digital) unless `showInSection: false`.
+- Links open in a new tab (`rel="noopener noreferrer"`). Link-only projects don't create a page
+  and aren't added to the sitemap. To give a project a full page later, move it to
+  `projects.ts` with a cover image.
 
 ## Change order and featured status
 
