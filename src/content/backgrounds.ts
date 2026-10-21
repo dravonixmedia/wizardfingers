@@ -27,7 +27,7 @@ export const backgrounds: {
 } = {
   opening: {
     // Profile portrait of Pranav, shared by all three stages (one continuous video).
-    // Source master: public/media/backgrounds/hero.mp4 (HEVC 10-bit, 1920×1080, 10 s).
+    // Source master (not deployed): media-source/backgrounds/hero.mp4 (HEVC 10-bit, 1920×1080, 10 s).
     // Served as H.264 encodes made from it, because many browsers cannot decode HEVC.
     // The face sits right of centre, in the top ~40% of the frame; the lower-centre text
     // area falls on the dark shirt and backdrop.

@@ -42,6 +42,7 @@ Every slot is optional. Until a slot is filled, the site shows a neutral charcoa
 | --- | --- | --- |
 | Images and video posters (JPG/PNG/WebP) | `src/media/backgrounds/` | relative to `src/media/` → `'backgrounds/motion.jpg'` |
 | Videos (MP4, H.264) | `public/media/backgrounds/` | public path → `'/media/backgrounds/motion.mp4'` |
+| Original masters (any format, never deployed) | `media-source/` | not referenced by the site |
 
 Suggested names: `opening-motion.jpg`, `opening-intelligence.mp4`, `opening-intelligence-poster.jpg`,
 `opening-digital.jpg`, `section-motion.mp4`, `section-motion-poster.jpg`, `about.jpg`, `contact.jpg`,
@@ -83,13 +84,13 @@ the poster. Reduced motion, Data Saver and blocked autoplay also show the poster
 
 **Use H.264 MP4, not HEVC/H.265.** Firefox and many Chrome installs cannot decode HEVC
 (especially 10-bit "Main 10"), so those visitors would only see the poster. The current hero
-was delivered as HEVC (`public/media/backgrounds/hero.mp4`, kept as the master); the site serves
-H.264 encodes made from it:
+was delivered as HEVC. The untouched master lives in `media-source/backgrounds/hero.mp4`, outside
+`public/`, so it is never deployed. The site serves H.264 encodes made from it:
 
 ```sh
-ffmpeg -i hero.mp4 -an -c:v libx264 -preset slow -crf 21 -profile:v high -pix_fmt yuv420p \
+ffmpeg -i media-source/backgrounds/hero.mp4 -an -c:v libx264 -preset slow -crf 21 -profile:v high -pix_fmt yuv420p \
   -r 24 -g 48 -movflags +faststart public/media/backgrounds/hero-1080.mp4
-ffmpeg -i hero.mp4 -an -vf scale=1280:720 -c:v libx264 -preset slow -crf 23 -profile:v high \
+ffmpeg -i media-source/backgrounds/hero.mp4 -an -vf scale=1280:720 -c:v libx264 -preset slow -crf 23 -profile:v high \
   -pix_fmt yuv420p -r 24 -g 48 -movflags +faststart public/media/backgrounds/hero-720.mp4
 ```
 

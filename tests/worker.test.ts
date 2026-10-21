@@ -51,13 +51,13 @@ const mediaEnv = {
   ASSETS: {
     async fetch(req: Request) {
       const { pathname } = new URL(req.url);
-      if (pathname === '/media/backgrounds/hero.mp4') return new Response(bytes, { headers: { 'Content-Type': 'video/mp4' } });
+      if (pathname === '/media/backgrounds/hero-1080.mp4') return new Response(bytes, { headers: { 'Content-Type': 'video/mp4' } });
       return new Response('<h1>404</h1>', { status: 404, headers: { 'Content-Type': 'text/html' } });
     },
   },
 } as never;
 const media = (range?: string) =>
-  worker.fetch(new Request('https://wizardfingers.com/media/backgrounds/hero.mp4', { headers: range ? { Range: range } : {} }), mediaEnv);
+  worker.fetch(new Request('https://wizardfingers.com/media/backgrounds/hero-1080.mp4', { headers: range ? { Range: range } : {} }), mediaEnv);
 
 test('media without Range is served whole and advertises ranges', async () => {
   const res = await media();

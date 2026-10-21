@@ -56,7 +56,8 @@ src/
   pages/          index, work/[slug] (one page per published project), 404, sitemap.xml, robots.txt
   scripts/        client-side behaviour (opening, backgrounds, menu, filters, media, motion)
 public/           favicons, og/default.png, media/ (videos, incl. media/backgrounds/ — served as-is)
-worker/           Cloudflare Worker entry (redirect + headers) and helpers
+worker/           Cloudflare Worker entry (redirect, headers, media byte ranges) and helpers
+media-source/     original media masters (e.g. HEVC hero video) — not built or deployed
 docs/             CONTENT.md, DEPLOYMENT.md
 ```
 
