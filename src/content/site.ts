@@ -49,10 +49,10 @@ export const site = {
 
 /** Primary navigation (homepage anchors). */
 export const navigation = [
-  { href: '#work', label: 'Work' },
   { href: '#motion', label: 'Motion' },
   { href: '#intelligence', label: 'Intelligence' },
   { href: '#digital', label: 'Digital' },
+  { href: '#work', label: 'Work' },
   { href: '#about', label: 'About' },
 ];
 

@@ -1,7 +1,7 @@
 import { prefersReducedMotion } from './env';
 
 /**
- * Curtain chapters: Motion → Intelligence → Digital → About.
+ * Curtain chapters: Motion → Intelligence → Digital, then Selected Work scrolls in normally.
  *
  * Progressive enhancement (JS on, motion allowed). Each section stays whole — background,
  * overlay, text and controls — and becomes an opaque sticky panel inside its own scroll track.
@@ -17,7 +17,7 @@ import { prefersReducedMotion } from './env';
  * edge, so long content stays fully readable. Without JS or with reduced motion the sections
  * are ordinary stacked sections.
  */
-const ORDER = ['motion', 'intelligence', 'digital', 'about'];
+const ORDER = ['motion', 'intelligence', 'digital'];
 /** Reading hold after a chapter has fully risen, in viewport heights (rise + hold ≈ 1.9 vh). */
 const HOLD = 0.9;
 /** Background parallax travel, as a fraction of the background's height (each way). */
@@ -39,7 +39,7 @@ interface Chapter {
 export function initChapters() {
   if (prefersReducedMotion()) return;
 
-  // Consecutive sections only (e.g. published Experiments between Digital and About end the run).
+  // Consecutive sections only (a section between them, e.g. published Experiments, ends the run).
   const sections: HTMLElement[] = [];
   let el = document.getElementById(ORDER[0]);
   for (const id of ORDER) {
@@ -160,7 +160,7 @@ export function initChapters() {
     if (hidden) window.scrollTo({ top: holdStart(c), behavior: 'instant' });
   });
 
-  // A deep link (e.g. /#about) resolves after the tracks exist, and again after the browser's
+  // A deep link (e.g. /#digital) resolves after the tracks exist, and again after the browser's
   // own hash scroll on load (which targets the pinned panel).
   const toHash = () => {
     const target = chapters.find((ch) => `#${ch.section.id}` === window.location.hash);

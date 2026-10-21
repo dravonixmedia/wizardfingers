@@ -16,9 +16,9 @@ const layouts = ['bottom-left', 'center-right', 'top-left'] as const;
 
 <Base path="/" linkBase="" hasOpening jsonLd={siteJsonLd()}>
   <Opening />
-  <Work />
   {features.map((feature, i) => <FeatureSection feature={feature} layout={layouts[i % layouts.length]} />)}
   <Experiments />
+  <Work />
   <About />
   <Contact />
   <ShowreelDialog />

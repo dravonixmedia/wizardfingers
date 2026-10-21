@@ -412,7 +412,7 @@ p {
 }
 
 /* Curtain chapters (scripts/chapters.ts; JS on, motion allowed) -----------
-   Motion → Intelligence → Digital → About: each section is an opaque sticky panel in its own
+   Motion → Intelligence → Digital: each section is an opaque sticky panel in its own
    scroll track; the next one rises over it while it stays pinned. Track heights and sticky
    offsets are set by the script. */
 
@@ -438,14 +438,6 @@ p {
 
 .curtain__panel > .bg {
   will-change: transform;
-}
-
-/* About keeps its approved framing: in a full-height panel its portrait starts below the fixed
-   header, as it did in its own section. Below 1024px its stacked layout is unchanged. */
-@media (min-width: 1024px) {
-  .curtains .curtain > #about.curtain__panel:not(.about--no-media) > .bg {
-    top: var(--header-h);
-  }
 }
 
 /* Motion: reveal hooks (only hidden while JS motion is active) ------------- */
