@@ -202,8 +202,9 @@ snapping):
 
 ### Focal points and text-safe areas
 
-- In the opening, the identity and headline sit in the **lower centre**. Frame
-  subjects so faces are in the **upper half** (e.g. `position: '50% 25%'`).
+- In the opening, the identity, headline and supporting line sit as one centred group at the
+  **bottom centre**, just above the controls. Frame subjects so faces are in the **upper half**
+  (e.g. `position: '50% 25%'`).
 - Motion section text sits **bottom-left**, Intelligence **right**, Digital
   **top-left**, About **left**. Keep faces and important detail away from those areas,
   or move them with `position`.

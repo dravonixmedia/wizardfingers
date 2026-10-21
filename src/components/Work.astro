@@ -16,7 +16,7 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
         <p class="work__intro">{work.intro}</p>
       ) : (
         <div class="work__empty">
-          <p class="work__empty-title serif">{work.emptyTitle}</p>
+          <p class="work__empty-title">{work.emptyTitle}</p>
           <p class="work__empty-text">{work.emptyText}</p>
         </div>
       )}
@@ -79,8 +79,8 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
   }
 
   .work__title {
-    font-size: clamp(2.9rem, 1.4rem + 5vw, 7rem);
-    line-height: 0.88;
+    font-size: var(--h-sub);
+    line-height: 1.06;
   }
 
   .work__intro,
@@ -95,8 +95,10 @@ for (const p of publishedProjects) counts[p.category] = (counts[p.category] ?? 0
   }
 
   .work__empty-title {
-    font-size: var(--step-2);
-    line-height: 1.1;
+    font-size: var(--body-l);
+    font-weight: 500;
+    line-height: 1.4;
+    color: rgb(242 240 234 / 0.88);
   }
 
   .work__filters {

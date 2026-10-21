@@ -3,8 +3,6 @@ import BackgroundMedia from './BackgroundMedia.astro';
 import { backgrounds, contact, contactDestinations } from '../content';
 
 const media = backgrounds.sections.contact;
-const words = contact.headline.split(' ');
-const last = words.pop();
 const hasLinks = contactDestinations.length > 0;
 ---
 
@@ -13,10 +11,7 @@ const hasLinks = contactDestinations.length > 0;
   <div class="wrap contact__inner">
     <div class="contact__head" data-reveal>
       <p class="label label--accent">{contact.label}</p>
-      <h2 id="contact-title" class="contact__title">
-        <span class="display">{words.join(' ')}</span>
-        <span class="serif">{last}</span>
-      </h2>
+      <h2 id="contact-title" class="contact__title display">{contact.headline}</h2>
     </div>
 
     {
@@ -79,22 +74,13 @@ const hasLinks = contactDestinations.length > 0;
 
   .contact__head {
     display: grid;
-    gap: 20px;
+    gap: 18px;
+    max-width: 36rem;
   }
 
   .contact__title {
-    font-weight: 400;
-    font-size: clamp(2.9rem, 1rem + 7vw, 8.5rem);
-    line-height: 0.9;
-  }
-
-  .contact__title .display {
-    display: block;
-  }
-
-  .contact__title .serif {
-    display: block;
-    font-size: 1.1em;
+    font-size: var(--h-sub);
+    line-height: 1.06;
   }
 
   .contact__body {
@@ -106,8 +92,8 @@ const hasLinks = contactDestinations.length > 0;
   .contact__intro {
     grid-column: 1 / span 4;
     color: rgb(242 240 234 / 0.82);
-    font-size: var(--step-1);
-    line-height: 1.4;
+    font-size: var(--body-l);
+    line-height: 1.5;
   }
 
   .contact__links {
