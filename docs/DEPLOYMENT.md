@@ -20,6 +20,7 @@ The site is a static Astro build served by the **existing** Worker
 | `assets.html_handling: "auto-trailing-slash"` | `/work/slug` → `/work/slug/`, matching canonical URLs. |
 | `assets.run_worker_first: true` | The Worker must see every request so it can redirect `www`. |
 | `workers_dev: false`, `preview_urls: false` | Keeps the workers.dev URL and Preview URLs **disabled**, as observed in the dashboard. Wrangler defaults `workers_dev` to `true` when it is omitted, so these are explicit on purpose. |
+| `previews: {}` | Enables `npx wrangler preview` for non-production branch builds. Inherits the top-level config; does not affect production deploys. |
 | `routes` (both `custom_domain: true`) | The two custom domains already attached to this Worker, declared so deploys keep them attached. |
 
 Redirect: `https://www.wizardfingers.com/<path>?<query>` → **301** →
@@ -92,15 +93,18 @@ If the Worker is connected to this GitHub repository
 | Root directory | `/` |
 | Build command | `npm run build` |
 | Deploy command | `npx wrangler deploy` |
-| Non-production branch deploy command | `npx wrangler versions upload` (default) |
+| Non-production branch deploy command | `npx wrangler preview` (needs the `previews` block in `wrangler.jsonc`) |
 | Production branch | `main` (current setting) — merging to `main` deploys to production |
 
 Node version comes from `.node-version` (22.22.0). No secrets or environment
 variables are required.
 
 Pushes to the production branch deploy automatically. Pushes to other branches
-only upload preview *versions*; with `preview_urls: false` those versions get no
-public URL and do not receive production traffic.
+run `npx wrangler preview`, which creates a Worker Preview (named after the
+branch) and never receives production traffic. Wrangler refuses to run
+`wrangler preview` unless `wrangler.jsonc` has a top-level `previews` block; an
+empty `"previews": {}` is enough, because Previews inherit the top-level assets,
+compatibility settings and Worker entry.
 
 ## About the previous failed build
 

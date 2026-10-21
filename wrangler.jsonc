@@ -16,6 +16,9 @@
   // dashboard. Set explicitly so `wrangler deploy` never re-enables them.
   "workers_dev": false,
   "preview_urls": false,
+  // Worker Previews (`npx wrangler preview`, used by non-production branch builds).
+  // Required by Wrangler even when empty; previews inherit the top-level config.
+  "previews": {},
   // Custom domains already attached to this Worker in the dashboard.
   // Declared here so every deploy keeps them attached to this Worker.
   "routes": [
