@@ -3,14 +3,19 @@
  *
  * Every supported file under `public/media/projects/<category>/` (any depth) becomes one entry:
  * the category comes from the top-level folder and the title from the filename. A video's
- * matching image (`<name>-poster.jpg`, or `<name>.jpg`) is its thumbnail, not a separate entry.
+ * matching image (`<name>-poster.jpg`, or `<name>.jpg`) is its thumbnail, not a separate entry;
+ * without one, a cover frame is extracted from the video with ffmpeg and cached.
  * See docs/CONTENT.md → "Publish work by uploading files".
  *
- * Self-contained (Node built-ins and sharp only) so the unit tests can import it directly.
+ * Self-contained (Node built-ins, sharp and the bundled ffmpeg binary) so the unit tests can
+ * import it directly.
  */
+import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { closeSync, openSync, readdirSync, readFileSync, readSync, statSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, openSync, readdirSync, readFileSync, readSync, renameSync, statSync, writeFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 import sharp from 'sharp';
 
 export const MEDIA_CATEGORIES = ['motion', 'intelligence'] as const;
@@ -34,8 +39,10 @@ export interface Thumb {
 }
 
 export interface MediaImageFile {
-  /** URL-encoded public path of the original. */
+  /** URL-encoded public path of the original (for a generated cover: its largest thumbnail). */
   src: string;
+  /** True for a cover extracted from the video at build time (no poster was uploaded). */
+  generated?: boolean;
   width: number;
   height: number;
   thumb: Thumb;
@@ -275,6 +282,92 @@ export function webmSize(file: string): Size | undefined {
 }
 
 // ---------------------------------------------------------------------------
+// Automatic covers (videos without an uploaded poster)
+// ---------------------------------------------------------------------------
+
+export interface CoverOptions {
+  /**
+   * Where extracted covers are kept between builds, keyed by the video's content. The default is
+   * inside `node_modules/.astro/`, which Cloudflare's build cache keeps for Astro projects.
+   */
+  cacheDir?: string;
+  /** ffmpeg binary. Default: WF_FFMPEG, then the bundled @ffmpeg-installer binary, then `ffmpeg` on PATH. */
+  ffmpeg?: string;
+}
+
+/** Bump when the extraction rules change, so cached covers are regenerated. */
+const COVER_VERSION = 1;
+/** Seconds to try, in order: early in the video but past fade-ins and black opening frames. */
+const COVER_TIMES = [1, 2, 3, 4.5, 6, 0.5, 0];
+/** A frame is usable when it is neither near-black nor flat (0–255 luminance). */
+const MIN_MEAN = 28;
+const MIN_STDEV = 14;
+
+const run = promisify(execFile);
+
+export function defaultFfmpeg(): string {
+  if (process.env.WF_FFMPEG) return process.env.WF_FFMPEG;
+  try {
+    const bundled = (createRequire(import.meta.url)('@ffmpeg-installer/ffmpeg') as { path: string }).path;
+    if (existsSync(bundled)) return bundled;
+  } catch {
+    // Not installed for this platform: fall back to PATH.
+  }
+  return 'ffmpeg';
+}
+
+async function videoDuration(ffmpeg: string, file: string): Promise<number | undefined> {
+  // `ffmpeg -i` with no output exits with an error but prints the container info on stderr.
+  const out = await run(ffmpeg, ['-hide_banner', '-i', file], { maxBuffer: 4 << 20 }).catch((e: { stderr?: string }) => ({ stderr: e.stderr ?? '' }));
+  const m = /Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(out.stderr);
+  return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3]) : undefined;
+}
+
+async function frameAt(ffmpeg: string, file: string, t: number): Promise<Buffer | undefined> {
+  // Fast seek, one frame, rotation applied (ffmpeg auto-rotates by default), PNG on stdout.
+  const { stdout } = await run(
+    ffmpeg,
+    ['-hide_banner', '-loglevel', 'error', '-ss', String(t), '-i', file, '-frames:v', '1', '-an', '-f', 'image2pipe', '-vcodec', 'png', 'pipe:1'],
+    { encoding: 'buffer', maxBuffer: 256 << 20 },
+  );
+  return stdout.length ? stdout : undefined;
+}
+
+/**
+ * A representative frame near the start of the video, as a JPEG in the cache. Tries a few early
+ * timestamps and keeps the first that is neither black nor flat (else the liveliest one).
+ * Returns the cached file, or undefined if no frame could be decoded.
+ */
+export async function extractCover(video: string, options: CoverOptions = {}): Promise<{ file: string; cached: boolean } | undefined> {
+  const cacheDir = options.cacheDir ?? join(process.cwd(), 'node_modules', '.astro', 'wizardfingers-covers');
+  const key = createHash('sha1').update(`v${COVER_VERSION}\0`).update(readFileSync(video)).digest('hex').slice(0, 16);
+  const file = join(cacheDir, `${key}.jpg`);
+  if (existsSync(file)) return { file, cached: true };
+
+  const ffmpeg = options.ffmpeg ?? defaultFfmpeg();
+  const duration = await videoDuration(ffmpeg, video);
+  const times = COVER_TIMES.filter((t) => t === 0 || duration === undefined || t < duration - 0.05);
+  let best: { frame: Buffer; score: number } | undefined;
+  for (const t of times) {
+    const frame = await frameAt(ffmpeg, video, t).catch(() => undefined);
+    if (!frame) continue;
+    const { channels } = await sharp(frame).greyscale().stats();
+    const { mean, stdev } = channels[0];
+    if (mean >= MIN_MEAN && stdev >= MIN_STDEV) {
+      best = { frame, score: Infinity };
+      break;
+    }
+    if (!best || mean + stdev > best.score) best = { frame, score: mean + stdev };
+  }
+  if (!best) return undefined;
+  mkdirSync(cacheDir, { recursive: true });
+  const tmp = `${file}.${process.pid}.tmp`;
+  writeFileSync(tmp, await sharp(best.frame).jpeg({ quality: 90, mozjpeg: true }).toBuffer());
+  renameSync(tmp, file); // atomic: a half-written cover is never reused
+  return { file, cached: false };
+}
+
+// ---------------------------------------------------------------------------
 // Discovery
 // ---------------------------------------------------------------------------
 
@@ -285,6 +378,8 @@ export interface DiscoverOptions {
   base?: string;
   /** Called for files that are skipped or need attention (unsupported type, unreadable size…). */
   warn?: (message: string) => void;
+  /** Automatic covers for videos without a poster. `false` turns them off. */
+  covers?: false | CoverOptions;
 }
 
 export interface Discovery {
@@ -373,6 +468,23 @@ export async function discoverProjectMedia(options: DiscoverOptions = {}): Promi
       };
     };
 
+    /** Cover extracted from the video; on failure the card keeps its dark title frame. */
+    const generatedCover = async (video: string, label: string): Promise<MediaImageFile | undefined> => {
+      try {
+        const cover = await extractCover(video, options.covers || {});
+        const size = cover && (await imageSize(cover.file));
+        if (!cover || !size) {
+          warn(`${label}: could not extract a cover frame; showing the dark title card (upload a -poster image to set one)`);
+          return undefined;
+        }
+        const thumb = { file: cover.file, hash: hashFile(cover.file), widths: thumbWidths(size.width) };
+        return { src: thumbUrl(thumb, thumb.widths.at(-1)!), ...size, thumb, generated: true };
+      } catch (e) {
+        warn(`${label}: cover extraction failed (${(e as Error).message.split('\n')[0]}); showing the dark title card`);
+        return undefined;
+      }
+    };
+
     const keys = [...groups.keys()].sort(byName);
     for (const key of keys) {
       if (posterKeys.has(key)) continue;
@@ -394,7 +506,8 @@ export async function discoverProjectMedia(options: DiscoverOptions = {}): Promi
           .sort((a, b) => VIDEO_PREFERENCE.indexOf(extOf(a)) - VIDEO_PREFERENCE.indexOf(extOf(b)))
           .map((v) => ({ src: encodePublicPath([...base, category, ...g.dir, v]), type: (extOf(v) === 'webm' ? 'video/webm' : 'video/mp4') as MediaVideoSource['type'] }));
         const pk = posterOf.get(key);
-        const poster = pk ? await imageFile(groups.get(pk)!.dir, groups.get(pk)!.images) : undefined;
+        let poster = pk ? await imageFile(groups.get(pk)!.dir, groups.get(pk)!.images) : undefined;
+        if (!poster && options.covers !== false) poster = await generatedCover(join(root, category, ...g.dir, g.videos[0]), `${category}/${path}`);
         let size: Size | undefined;
         for (const v of g.videos) {
           const file = join(root, category, ...g.dir, v);

@@ -4,15 +4,17 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import sharp from 'sharp';
-import { discoverProjectMedia, encodePublicPath, mp4Size, thumbWidths, titleFromFilename, webmSize } from '../src/lib/project-media.ts';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { defaultFfmpeg, discoverProjectMedia, encodePublicPath, extractCover, mp4Size, thumbWidths, titleFromFilename, webmSize } from '../src/lib/project-media.ts';
 
 // --- Temporary fixtures (removed after the run) ------------------------------
 
 const root = mkdtempSync(join(tmpdir(), 'wf-media-'));
 after(() => rmSync(root, { recursive: true, force: true }));
 
-const put = (rel: string, data: Buffer | string) => {
-  const file = join(root, rel);
+const put = (rel: string, data: Buffer | string, base = root) => {
+  const file = join(base, rel);
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, data);
   return file;
@@ -67,8 +69,52 @@ put('intelligence/.DS_Store', 'x');
 put('digital/ignored.jpg', await image(10, 10, 'jpeg')); // Digital stays link-only
 
 const warnings: string[] = [];
-const { entries, oversized } = await discoverProjectMedia({ root, warn: (m) => warnings.push(m) });
+const coverCache = join(root, '.cover-cache');
+const { entries, oversized } = await discoverProjectMedia({ root, warn: (m) => warnings.push(m), covers: { cacheDir: coverCache } });
 const byId = Object.fromEntries(entries.map((e) => [e.id, e]));
+
+// --- Automatic covers (real encoded videos, made with the bundled ffmpeg) ------------------------
+
+const ffmpeg = defaultFfmpeg();
+const real = mkdtempSync(join(tmpdir(), 'wf-covers-'));
+after(() => rmSync(real, { recursive: true, force: true }));
+const encode = (rel: string, args: string[]) => {
+  const file = join(real, rel);
+  mkdirSync(dirname(file), { recursive: true });
+  execFileSync(ffmpeg, ['-hide_banner', '-loglevel', 'error', '-y', ...args, file]);
+  return file;
+};
+// 1.5 s of black, then a bright test pattern (landscape H.264).
+encode('motion/black-open-film.mp4', ['-f', 'lavfi', '-i', 'color=black:s=640x360:d=1.5:r=24', '-f', 'lavfi', '-i', 'testsrc=s=640x360:d=3:r=24', '-filter_complex', '[0][1]concat=n=2:v=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p']);
+/** Sets the track's display matrix to a 90° rotation, as phones do when recording upright. */
+const rotate90 = (file: string) => {
+  const buf = readFileSync(file);
+  const i = buf.indexOf('tkhd');
+  const base = i + 4 + 4 + (buf[i + 4] === 1 ? 32 : 20) + 8 + 8;
+  [0, 65536, 0, -65536, 0, 0, 0, 0, 2 ** 30].forEach((v, k) => buf.writeInt32BE(v, base + k * 4));
+  writeFileSync(file, buf);
+};
+// Landscape pixels flagged as rotated 90° (as phones record portrait video).
+rotate90(encode('motion/phone-clip.mp4', ['-f', 'lavfi', '-i', 'testsrc=s=640x360:d=3:r=24', '-c:v', 'libx264', '-pix_fmt', 'yuv420p']));
+// Portrait WebM.
+encode('intelligence/tall-loop.webm', ['-f', 'lavfi', '-i', 'testsrc=s=360x640:d=3:r=24', '-c:v', 'libvpx-vp9', '-b:v', '200k']);
+// A video with its own poster: the poster wins, nothing is extracted.
+encode('intelligence/posted-film.webm', ['-f', 'lavfi', '-i', 'testsrc=s=640x360:d=2:r=24', '-c:v', 'libvpx-vp9', '-b:v', '200k']);
+put('intelligence/posted-film-poster.png', await image(640, 360, 'png'), real);
+// Only black frames: the brightest candidate is still used rather than nothing.
+encode('motion/all-black.webm', ['-f', 'lavfi', '-i', 'color=black:s=320x180:d=2:r=24', '-c:v', 'libvpx-vp9', '-b:v', '50k']);
+// Not a video at all.
+put('motion/broken-upload.mp4', 'definitely not a video', real);
+
+const cache = join(real, '.cache');
+const realWarnings: string[] = [];
+const realFound = await discoverProjectMedia({ root: real, covers: { cacheDir: cache }, warn: (m) => realWarnings.push(m) });
+const realById = Object.fromEntries(realFound.entries.map((e) => [e.id, e]));
+const cover = (id: string) => {
+  const e = realById[id];
+  assert.equal(e?.kind, 'video');
+  return e.kind === 'video' ? e.poster : undefined;
+};
 
 // --- Titles and URLs -----------------------------------------------------------
 
@@ -122,7 +168,7 @@ test('a matching poster becomes the thumbnail, not a separate entry', () => {
   assert.ok(!entries.some((e) => /poster/i.test(e.title)));
 });
 
-test('a video without a poster has none (the card shows a dark title frame)', () => {
+test('an undecodable video without a poster keeps the dark title frame and warns', () => {
   const v = byId['motion-weddings-beach-wedding-teaser'];
   assert.equal(v.kind === 'video' && v.poster, undefined);
   assert.equal(v.kind === 'video' && v.sources[0].src, '/media/projects/motion/weddings/Beach%20Wedding%20Teaser.webm');
@@ -146,6 +192,7 @@ test('sizes: images, MP4 (incl. rotation) and WebM', () => {
 test('hidden, .gitkeep, unsupported and Digital files are ignored', () => {
   assert.ok(!entries.some((e) => /hidden|notes|ignored|DS_Store/i.test(e.path)));
   assert.ok(warnings.some((w) => w.includes('notes.txt')));
+  assert.ok(warnings.some((w) => w.includes('Beach Wedding Teaser.webm') && /cover/.test(w)));
 });
 
 test('thumbnail widths never exceed the source', () => {
@@ -168,6 +215,69 @@ test('files over the hosting limit are reported, not published', async () => {
 });
 
 test('discovery is deterministic', async () => {
-  const again = await discoverProjectMedia({ root });
+  const again = await discoverProjectMedia({ root, covers: { cacheDir: coverCache } });
   assert.deepEqual(again.entries, entries);
+});
+
+// --- Automatic covers -------------------------------------------------------------------
+
+test('covers are extracted for videos without a poster, skipping black opening frames', async () => {
+  const c = cover('motion-black-open-film');
+  assert.ok(c?.generated);
+  assert.deepEqual([c.width, c.height], [640, 360]);
+  const { channels } = await sharp(c.thumb.file).greyscale().stats();
+  assert.ok(channels[0].mean > 60, `cover is not black (mean ${channels[0].mean})`);
+  assert.match(c.src, /^\/media\/thumbs\/[0-9a-f]{12}-640\.webp$/);
+});
+
+test('covers keep the video orientation (rotation applied) and proportions', () => {
+  const phone = cover('motion-phone-clip');
+  assert.deepEqual([phone?.width, phone?.height], [360, 640]);
+  assert.deepEqual([realById['motion-phone-clip'].width, realById['motion-phone-clip'].height], [360, 640]);
+  const tall = cover('intelligence-tall-loop');
+  assert.deepEqual([tall?.width, tall?.height], [360, 640]);
+});
+
+test('an uploaded poster takes priority over extraction', () => {
+  const p = cover('intelligence-posted-film');
+  assert.equal(p?.generated, undefined);
+  assert.equal(p?.src, '/media/projects/intelligence/posted-film-poster.png');
+  assert.ok(!realFound.entries.some((e) => e.title.includes('Poster')));
+});
+
+test('an all-black video still gets its best frame; an unreadable file falls back with a warning', () => {
+  assert.ok(cover('motion-all-black')?.generated);
+  assert.equal(cover('motion-broken-upload'), undefined);
+  assert.ok(realWarnings.some((w) => w.includes('broken-upload.mp4') && /dark title card/.test(w)));
+});
+
+test('covers are cached by video content: unchanged videos are not processed again', async () => {
+  const before = readdirSync(cache).sort();
+  assert.equal(before.length, 4); // black-open, phone, tall, all-black (not the posted or broken one)
+  // A missing ffmpeg proves the second run reads only the cache.
+  const again = await discoverProjectMedia({ root: real, covers: { cacheDir: cache, ffmpeg: '/nonexistent/ffmpeg' } });
+  assert.deepEqual(readdirSync(cache).sort(), before);
+  assert.deepEqual(again.entries, realFound.entries);
+  const hit = await extractCover(join(real, 'motion/phone-clip.mp4'), { cacheDir: cache, ffmpeg: '/nonexistent/ffmpeg' });
+  assert.equal(hit?.cached, true);
+});
+
+test('a changed video or a new poster updates the cover on the next build', async () => {
+  const first = cover('motion-phone-clip')!.thumb.hash;
+  rotate90(encode('motion/phone-clip.mp4', ['-f', 'lavfi', '-i', 'testsrc2=s=640x360:d=3:r=24', '-c:v', 'libx264', '-pix_fmt', 'yuv420p']));
+  put('intelligence/tall-loop-poster.jpg', await image(360, 640, 'jpeg'), real);
+  const next = await discoverProjectMedia({ root: real, covers: { cacheDir: cache } });
+  const byId2 = Object.fromEntries(next.entries.map((e) => [e.id, e]));
+  const phone = byId2['motion-phone-clip'];
+  assert.ok(phone.kind === 'video' && phone.poster?.generated && phone.poster.thumb.hash !== first);
+  const tall = byId2['intelligence-tall-loop'];
+  assert.equal(tall.kind === 'video' && tall.poster?.src, '/media/projects/intelligence/tall-loop-poster.jpg');
+});
+
+test('without ffmpeg, discovery still succeeds and warns', async () => {
+  const w: string[] = [];
+  const r = await discoverProjectMedia({ root: real, covers: { cacheDir: join(real, '.empty-cache'), ffmpeg: '/nonexistent/ffmpeg' }, warn: (m) => w.push(m) });
+  assert.equal(r.entries.length, realFound.entries.length);
+  assert.ok(w.some((m) => m.includes('black-open-film.mp4')));
+  assert.ok(!existsSync(join(real, '.empty-cache')) || readdirSync(join(real, '.empty-cache')).length === 0);
 });

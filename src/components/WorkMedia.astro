@@ -133,18 +133,19 @@ const viewerData = (e: MediaEntry) =>
     color: rgb(242 240 234 / 0.62);
   }
 
+  /* Restrained: a small translucent disc in the corner, so the cover carries the card. */
   .wm__play {
     position: absolute;
     right: 12px;
     bottom: 12px;
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid rgb(242 240 234 / 0.5);
+    width: 36px;
+    height: 36px;
+    border: 1px solid rgb(242 240 234 / 0.35);
     border-radius: 50%;
-    background: rgb(10 10 11 / 0.55);
-    color: var(--c-ivory);
+    background: rgb(10 10 11 / 0.42);
+    color: rgb(242 240 234 / 0.92);
     backdrop-filter: blur(6px);
     transition:
       background-color var(--t-fast),
@@ -157,13 +158,20 @@ const viewerData = (e: MediaEntry) =>
     bottom: auto;
     top: 50%;
     left: 50%;
-    width: 60px;
-    height: 60px;
+    width: 56px;
+    height: 56px;
     translate: -50% -50%;
   }
 
   .wm__play svg {
+    width: 14px;
+    height: 14px;
     translate: 1px 0;
+  }
+
+  .wm__play--centre svg {
+    width: 18px;
+    height: 18px;
   }
 
   .wm__meta {
@@ -192,9 +200,9 @@ const viewerData = (e: MediaEntry) =>
 
   .wm__open:hover .wm__play,
   .wm__open:focus-visible .wm__play {
-    background: var(--c-ivory);
+    background: rgb(10 10 11 / 0.7);
     border-color: var(--c-ivory);
-    color: var(--c-black);
+    color: var(--c-ivory);
   }
 
   .wm__open:focus-visible {
