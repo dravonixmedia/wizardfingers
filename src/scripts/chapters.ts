@@ -175,6 +175,9 @@ export function initChapters() {
     const c = chapters.find((ch) => ch.section.contains(e.target as Node));
     if (!c) return;
     const target = e.target as HTMLElement;
+    // Keyboard focus only: a mouse or touch press focuses on pointerdown, and scrolling then
+    // would move the control away before the click lands.
+    if (!target.matches(':focus-visible')) return;
     const r = target.getBoundingClientRect();
     const k = chapters.indexOf(c);
     const above = chapters[k + 1]?.section.getBoundingClientRect();
