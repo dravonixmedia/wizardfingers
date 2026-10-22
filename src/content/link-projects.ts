@@ -51,13 +51,14 @@ export const linkProjects: LinkProject[] = [
     order: 40,
   },
   {
-    // Also shown in the Digital section (with the Timeless Knot background).
+    // Its site is the Digital section's background video; listed in Selected Work only.
     title: 'Timeless Knot',
     type: 'Website',
     category: 'digital',
     url: 'https://timelessknot.in/',
     label: 'Visit Website',
     workLabel: 'Development',
+    showInSection: false,
     published: true,
     order: 50,
   },

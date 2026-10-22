@@ -359,8 +359,9 @@ add an entry to `src/content/link-projects.ts`:
 - **Selected Work:** entries with a `workLabel` appear as a compact list (name, domain, label and
   "Visit Website ↗") under **All** and their category filter, after any full projects. The
   empty-state message disappears once anything is listed.
-- **Discipline section:** entries appear as a name / type / link row in their section (e.g.
-  Timeless Knot in Digital) unless `showInSection: false`.
+- **Discipline section:** entries appear as a name / type / link row in their section unless
+  `showInSection: false` (all seven current Digital links use it, so the Digital section shows
+  only its heading, text and background video).
 - Links open in a new tab (`rel="noopener noreferrer"`). Link-only projects don't create a page
   and aren't added to the sitemap. To give a project a full page later, move it to
   `projects.ts` with a cover image.
