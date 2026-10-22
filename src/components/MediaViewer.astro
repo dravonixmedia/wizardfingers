@@ -1,0 +1,140 @@
+---
+/** Enlarged viewer for folder-published work (src/scripts/viewer.ts). Native <dialog>: Escape closes. */
+---
+
+<dialog class="viewer" aria-labelledby="viewer-title" data-viewer>
+  <div class="viewer__inner">
+    <div class="viewer__bar">
+      <div class="viewer__heading">
+        <h2 id="viewer-title" class="viewer__title" data-viewer-title></h2>
+        <p class="viewer__kind label" data-viewer-kind></p>
+      </div>
+      <p class="viewer__count label" data-viewer-count aria-live="polite"></p>
+      <button class="viewer__btn label" type="button" data-viewer-close>
+        Close <span aria-hidden="true">✕</span>
+      </button>
+    </div>
+    <div class="viewer__stage" data-viewer-stage></div>
+    <div class="viewer__nav" data-viewer-nav>
+      <button class="viewer__btn label" type="button" data-viewer-prev>
+        <span aria-hidden="true">←</span> Previous
+      </button>
+      <button class="viewer__btn label" type="button" data-viewer-next>
+        Next <span aria-hidden="true">→</span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .viewer {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--c-ivory);
+  }
+
+  .viewer::backdrop {
+    background: rgb(10 10 11 / 0.94);
+    backdrop-filter: blur(6px);
+  }
+
+  .viewer__inner {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    height: 100%;
+    padding: max(14px, env(safe-area-inset-top)) var(--gutter) max(14px, env(safe-area-inset-bottom));
+  }
+
+  .viewer__bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .viewer__heading {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    margin-right: auto;
+  }
+
+  .viewer__title {
+    overflow: hidden;
+    font-size: clamp(1rem, 0.95rem + 0.3vw, 1.25rem);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .viewer__kind,
+  .viewer__count {
+    color: rgb(242 240 234 / 0.6);
+  }
+
+  .viewer__stage {
+    position: relative;
+    min-height: 0;
+  }
+
+  /* Fitted inside the stage at its own proportions, centred. */
+  .viewer__stage > :global(img),
+  .viewer__stage > :global(video) {
+    position: absolute;
+    inset: 0;
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    margin: auto;
+    background: #000;
+  }
+
+  .viewer__nav {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .viewer__nav[hidden] {
+    display: none;
+  }
+
+  .viewer__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--c-line-strong);
+    border-radius: 999px;
+    background: var(--c-black);
+    color: var(--c-ivory);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .viewer__btn:hover {
+    border-color: var(--c-ivory);
+  }
+
+  .viewer__btn:focus-visible {
+    outline: 2px solid var(--c-blue);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 599px) {
+    .viewer__count {
+      display: none;
+    }
+  }
+</style>

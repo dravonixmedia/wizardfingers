@@ -1,10 +1,11 @@
 ---
 import ProjectCard from './ProjectCard.astro';
-import { dimensionLabels, publishedProjects, work, workLinkProjects } from '../content';
+import WorkMedia from './WorkMedia.astro';
+import { dimensionLabels, mediaProjects, publishedProjects, work, workLinkProjects } from '../content';
 
 const LAYOUTS = ['wide', 'left', 'right', 'narrow', 'offset'];
 const filters = [{ id: 'all', label: 'All' }, ...Object.entries(dimensionLabels).map(([id, label]) => ({ id, label }))];
-const items = [...publishedProjects, ...workLinkProjects];
+const items = [...publishedProjects, ...mediaProjects, ...workLinkProjects];
 const counts: Record<string, number> = { all: items.length };
 for (const p of items) counts[p.category] = (counts[p.category] ?? 0) + 1;
 const domain = (url: string) => new URL(url).hostname.replace(/^www\./, '');
@@ -50,6 +51,7 @@ const domain = (url: string) => new URL(url).hostname.replace(/^www\./, '');
               ))}
             </ol>
           )}
+          {mediaProjects.length > 0 && <WorkMedia entries={mediaProjects} />}
           {workLinkProjects.length > 0 && (
             <ul class="work__links" aria-label="Development work">
               {workLinkProjects.map((l) => (
@@ -178,7 +180,9 @@ const domain = (url: string) => new URL(url).hostname.replace(/^www\./, '');
     gap: clamp(56px, 7vw, 112px) var(--gutter);
   }
 
-  .work__grid + .work__links {
+  .work__grid + :global(.work__media),
+  .work__grid + .work__links,
+  :global(.work__media) + .work__links {
     margin-top: clamp(56px, 7vw, 112px);
   }
 

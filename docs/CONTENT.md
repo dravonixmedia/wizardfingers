@@ -235,6 +235,57 @@ For private Vimeo links add `hash: 'abc123'` (the part after the ID in the share
 Self-hosted video tips: H.264 MP4, ≤ 1080p, `-movflags +faststart`.
 Workers static assets are limited to 25 MiB per file — host longer films on Vimeo/YouTube.
 
+## Publish work by uploading files (Selected Work)
+
+Videos and images placed in a category folder appear in **Selected Work** automatically. No code
+or project entry is needed.
+
+| Folder | For |
+| --- | --- |
+| `public/media/projects/motion/` | Edited videos, filmmaking and related images |
+| `public/media/projects/intelligence/` | AI videos and AI-generated creative images |
+
+Digital stays as the seven website/app links in `src/content/link-projects.ts`.
+
+### Upload workflow
+
+1. On GitHub, open the category folder (e.g. `public/media/projects/motion/`).
+2. **Add file → Upload files**, and upload media with a descriptive filename, e.g.
+   `halo-villa-film.mp4`.
+3. Optional, for videos: also upload a matching poster image, e.g. `halo-villa-film-poster.jpg`.
+4. Commit to `main`.
+5. Wait for the Cloudflare production deployment to finish successfully.
+6. The item appears in Selected Work, in its filter, with the counts updated.
+
+Deleting a file (and committing) removes its entry after the next deployment. Renaming a file
+renames its entry.
+
+### Rules
+
+- **Supported:** MP4, WebM (video); JPG, JPEG, PNG, WebP, AVIF (image). Other files are ignored,
+  as are hidden files (`.DS_Store`, `.gitkeep`).
+- **Maximum 25 MiB per file** (Cloudflare's limit). A larger file fails the build with a message
+  naming it, and the live site stays as it was. Compress or shorten the video, or link longer
+  films from YouTube/Vimeo instead.
+- **Titles come from filenames.** Hyphens, underscores and spaces become spaces and words are
+  capitalised: `halo-villa-film.mp4` → "Halo Villa Film". Acronyms such as AI, UAE, CGI, VFX and
+  3D stay in capitals: `ai-dubai-reel.mp4` → "AI Dubai Reel". Spaces in filenames are fine.
+- **Order:** alphabetical within each category, Motion first. To set the order, start filenames
+  with a number: `01-halo-villa-film.mp4`, `02-…`. The number is not shown in the title.
+- **Subfolders** are allowed (e.g. `motion/weddings/…`). The category always comes from the
+  top-level folder.
+- **Posters:** `<video name>-poster.<jpg|png|webp|avif>` in the same folder is used as the video's
+  thumbnail and is not listed separately. An image with exactly the video's name
+  (`halo-villa-film.jpg`) works too. Without a poster the video shows a dark title card with a
+  play button.
+- The same name in two formats (`film.webm` + `film.mp4`) is one entry; browsers pick the format
+  they support.
+- Media keeps its own proportions (portrait, square or landscape). Nothing is cropped.
+- Thumbnails (WebP) are generated during the build. Visitors download a video only when they open
+  it. Videos start muted, with sound available from the player controls.
+- Only the `motion` and `intelligence` folders are scanned. Media for detailed projects (below)
+  lives in other folders.
+
 ## Add and publish a project
 
 1. Create `src/media/projects/<slug>/` and add a cover image (landscape, ≥ 2400 px wide
