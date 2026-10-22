@@ -39,7 +39,7 @@ const domain = (url: string) => new URL(url).hostname.replace(/^www\./, '');
               >
                 {f.label}
                 <sup aria-hidden="true">{counts[f.id] ?? 0}</sup>
-                <span class="sr-only">({counts[f.id] ?? 0} projects)</span>
+                <span class="sr-only">({counts[f.id] ?? 0} {counts[f.id] === 1 ? 'project' : 'projects'})</span>
               </button>
             ))}
           </div>
