@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
  * Text entrances: one restrained treatment for the whole site (loaded with motion.ts, so never
  * with reduced motion or without JavaScript; CSS only pre-hides while `html.motion` is set).
  *
- * - Soft fade with a 16px rise, 0.65s, eased out; items follow each other by ~90ms in reading
+ * - Soft fade with a 16px rise, 0.7s, eased out; items follow each other by ~90ms in reading
  *   order: label → heading (line by line) → copy → actions.
  * - A group (`[data-reveal]`) animates its direct children. Headings animate by line; other
  *   children as whole blocks; a list marked `[data-reveal-each]` item by item.
@@ -17,10 +17,10 @@ import { gsap } from 'gsap';
  */
 
 const RISE = 16;
-const DURATION = 0.65;
+const DURATION = 0.7;
 const STEP = 0.09; // between items
 const LINE_STEP = 0.08; // between heading lines
-const EASE = 'power3.out';
+const EASE = 'power2.out';
 
 const HEADING = /^H[1-6]$/;
 

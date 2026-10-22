@@ -68,7 +68,8 @@ const viewerData = (e: MediaEntry) =>
   /* Justified rows: every item keeps its own proportions (no crops). Each item's basis and
      growth are proportional to its aspect ratio, so items sharing a row share one height. */
   .work__media {
-    --row: clamp(220px, 30vw, 440px);
+    /* Base row height follows the width, and the height on short landscape screens. */
+    --row: clamp(220px, min(30vw, 50svh), 440px);
     display: flex;
     flex-wrap: wrap;
     gap: clamp(28px, 3vw, 44px) clamp(12px, 1.6vw, 24px);
@@ -83,6 +84,9 @@ const viewerData = (e: MediaEntry) =>
   .wm {
     flex: var(--r) 1 calc(var(--r) * var(--row));
     min-width: 0;
+    /* A row of only a few narrow (portrait) items would otherwise stretch them taller than the
+       screen: items grow to at most 1.5× the base row height, leaving the rest of the row open. */
+    max-width: calc(var(--r) * var(--row) * 1.5);
   }
 
   .wm[hidden] {
@@ -226,6 +230,7 @@ const viewerData = (e: MediaEntry) =>
     }
     .wm {
       flex: 1 1 100%;
+      max-width: none;
     }
     .wm__frame {
       width: min(100%, calc(72svh * var(--r)));

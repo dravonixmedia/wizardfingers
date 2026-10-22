@@ -205,7 +205,7 @@ snapping):
 ### Text entrances
 
 `src/scripts/entrances.ts` gives text one restrained entrance: a soft fade with a 16px rise
-(0.65s). Items follow each other about 90ms apart, label → heading (line by line) → copy →
+(0.7s). Items follow each other about 90ms apart, label → heading (line by line) → copy →
 links. It covers the opening (PRANAV, role, headline, supporting line, then the controls) and every
 `data-reveal` group: the discipline sections, Selected Work's heading and filters, About and Contact.
 
