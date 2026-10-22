@@ -404,18 +404,19 @@ const pad = (n: number) => String(n).padStart(2, '0');
     transform: translateY(0.3rem);
   }
 
-  /* Incoming text settles in ~0.8s (headline, then the supporting line 0.1s later). */
+  /* Incoming text waits 0.2s for the outgoing headline to fade (never two at once), then
+     settles in ~0.9s in all (headline, then the supporting line 0.1s later). */
   :global(html.opening-pinned) .stage.is-active .stage__headline,
   :global(html.opening-pinned) .stage.is-active .stage__supporting {
     opacity: 1;
     transform: none;
     transition:
-      opacity 0.55s var(--ease-out) 0.12s,
-      transform 0.65s var(--ease-out) 0.12s;
+      opacity 0.5s var(--ease-out) 0.2s,
+      transform 0.6s var(--ease-out) 0.2s;
   }
 
   :global(html.opening-pinned) .stage.is-active .stage__supporting {
-    transition-delay: 0.22s;
+    transition-delay: 0.3s;
   }
 
   :global(html.opening-pinned) .opening__cue {
