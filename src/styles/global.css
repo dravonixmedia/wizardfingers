@@ -442,8 +442,15 @@ p {
 
 /* Motion: reveal hooks (only hidden while JS motion is active) ------------- */
 
-html.motion [data-hero-in] {
+html.motion [data-hero-in],
+html.motion [data-reveal],
+html.motion .opening .stage__text {
   opacity: 0;
+}
+
+/* Line wrappers that exist only while a text entrance plays (scripts/entrances.ts). */
+.enter-line {
+  display: block;
 }
 
 /* Cross-document view transitions (progressive enhancement) --------------- */

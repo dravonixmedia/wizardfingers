@@ -28,7 +28,7 @@ const domain = (url: string) => new URL(url).hostname.replace(/^www\./, '');
     {
       items.length > 0 && (
         <>
-          <div class="work__filters" role="group" aria-label="Filter projects by dimension" data-filters>
+          <div class="work__filters" role="group" aria-label="Filter projects by dimension" data-filters data-reveal>
             {filters.map((f, i) => (
               <button
                 type="button"

@@ -60,8 +60,8 @@ export function initChapters() {
     root.append(track);
     track.append(section);
     section.classList.add('curtain__panel');
-    // The section is revealed as a whole: no separate text entrance, no GSAP parallax.
-    section.querySelector('[data-reveal]')?.removeAttribute('data-reveal');
+    // The chapter has its own background parallax (below), not the GSAP one. Its text entrance
+    // (entrances.ts) waits until the panel is half way up.
     const bg = section.querySelector<HTMLElement>(':scope > [data-bg]');
     bg?.removeAttribute('data-parallax-bg');
     return { section, track, bg, enter: 0, leave: 0 };

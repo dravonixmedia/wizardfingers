@@ -43,7 +43,10 @@ export const site = {
     linkedin: '',
     vimeo: '',
     youtube: '',
-    whatsapp: '',
+    whatsapp: [
+      { region: 'India', number: '918086552536', display: '+91 80865 52536' },
+      { region: 'UAE', number: '971545680059', display: '+971 54 568 0059' },
+    ],
   } satisfies ContactLinks as ContactLinks,
 } as const;
 
@@ -101,6 +104,8 @@ export const about = {
   label: 'About',
   headline: 'Curiosity is the starting point.',
   body: 'I’m Pranav, a Creative Technologist working across filmmaking, AI and digital development. Since 2016, I’ve explored video production, content creation and visual storytelling—bringing that same curiosity into websites, web applications and emerging creative tools.',
+  /** Shown beneath the biography; only the company name is linked. */
+  affiliation: { prefix: 'Founder of', company: 'Dravonix Media Pvt. Ltd.', url: 'https://dravonixmedia.com/' },
 };
 
 export const experimentsCopy = {
@@ -113,5 +118,6 @@ export const contact = {
   label: 'Contact',
   headline: 'What shall we bring to life?',
   intro: 'Have a film, a website or an idea in mind? Let’s talk.',
+  /** Shown only if no contact details are configured. */
   unavailable: 'Contact details will be published here soon.',
 };

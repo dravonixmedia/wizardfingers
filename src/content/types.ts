@@ -134,8 +134,17 @@ export interface ContactLinks {
   linkedin?: string;
   vimeo?: string;
   youtube?: string;
-  /** International format digits, e.g. "441234567890" (no + or spaces needed). */
-  whatsapp?: string;
+  /** WhatsApp numbers, one link each, in the order given. */
+  whatsapp?: WhatsAppContact[];
+}
+
+export interface WhatsAppContact {
+  /** Shown after "WhatsApp —", e.g. "India". */
+  region: string;
+  /** International format, digits only, e.g. "918086552536". Used for the wa.me link. */
+  number: string;
+  /** The number as displayed, e.g. "+91 80865 52536". Must contain the same digits. */
+  display: string;
 }
 
 /**

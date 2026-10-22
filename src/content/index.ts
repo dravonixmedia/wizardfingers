@@ -288,10 +288,13 @@ function buildContact(c: ContactLinks): ContactDestination[] {
       out.push({ id, label: socialLabels[id], href, display: `${u.hostname.replace(/^www\./, '')}${u.pathname.replace(/\/$/, '')}`, external: true });
     }
   }
-  const wa = c.whatsapp?.replace(/[^\d]/g, '');
-  if (wa) {
-    if (wa.length >= 8 && wa.length <= 15) out.push({ id: 'whatsapp', label: 'WhatsApp', href: `https://wa.me/${wa}`, display: 'Message on WhatsApp', external: true });
-    else if (!import.meta.env.DEV) throw new Error('site.contact.whatsapp must be 8–15 digits in international format');
+  for (const w of c.whatsapp ?? []) {
+    const where = `site.contact.whatsapp (${w.region || '?'})`;
+    if (!w.region?.trim()) fail(`${where}: region is required`);
+    else if (!/^\d{8,15}$/.test(w.number)) fail(`${where}: number must be 8–15 digits in international format`);
+    // The visible number and the link must be the same number.
+    else if (w.display.replace(/\D/g, '') !== w.number) fail(`${where}: display "${w.display}" does not match number ${w.number}`);
+    else out.push({ id: 'whatsapp', label: `WhatsApp — ${w.region.trim()}`, href: `https://wa.me/${w.number}`, display: w.display.trim(), external: true });
   }
   if (problems.length && !import.meta.env.DEV) throw new Error(problems.join('\n'));
   return out;
