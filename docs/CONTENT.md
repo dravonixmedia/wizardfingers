@@ -191,8 +191,8 @@ snapping):
 - Each section stays whole — background, overlay, text and Pause/Play together — as an opaque
   full-screen panel. The next one rises from the bottom and covers it like a curtain while it
   stays pinned underneath. Scrolling back reverses it exactly.
-- Each chapter is about 1.9 viewport heights of scroll: one to rise, then a reading hold
-  (`HOLD = 0.9` in the script). Panels taller than the screen (e.g. on short phones) scroll
+- Each chapter is 2.1 viewport heights of scroll: one to rise, then a reading hold
+  (`HOLD = 1.1` in the script). The opening uses one viewport of scroll per stage. Panels taller than the screen (e.g. on short phones) scroll
   through all their content first, then pin by their bottom edge.
 - The backgrounds drift very slightly (`PARALLAX`, ±1.8%) with a matching scale so no edge is
   ever exposed.
@@ -205,12 +205,13 @@ snapping):
 ### Text entrances
 
 `src/scripts/entrances.ts` gives text one restrained entrance: a soft fade with a 16px rise
-(0.7s). Items follow each other about 100ms apart, label → heading (line by line) → copy →
+(0.65s). Items follow each other about 90ms apart, label → heading (line by line) → copy →
 links. It covers the opening (PRANAV, role, headline, supporting line, then the controls) and every
 `data-reveal` group: the discipline sections, Selected Work's heading and filters, About and Contact.
 
-- Each group plays once, when it scrolls into view. In a curtain chapter it waits until the
-  incoming panel is half way up.
+- Each group plays once, when it scrolls into view. In a curtain chapter it starts once the
+  incoming panel is 30% up and its text is entering the screen, so it has finished by about the
+  time the panel settles, leaving the reading hold for reading.
 - Keyboard focus inside a waiting group shows it at once. Direct links (`/#contact`) reveal
   their section on arrival.
 - With reduced motion, or without JavaScript, all text is visible immediately.

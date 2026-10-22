@@ -4,20 +4,22 @@ import { gsap } from 'gsap';
  * Text entrances: one restrained treatment for the whole site (loaded with motion.ts, so never
  * with reduced motion or without JavaScript; CSS only pre-hides while `html.motion` is set).
  *
- * - Soft fade with a 16px rise, 0.7s, eased out; items follow each other by ~100ms in reading
+ * - Soft fade with a 16px rise, 0.65s, eased out; items follow each other by ~90ms in reading
  *   order: label → heading (line by line) → copy → actions.
  * - A group (`[data-reveal]`) animates its direct children. Headings animate by line; other
  *   children as whole blocks; a list marked `[data-reveal-each]` item by item.
- * - Groups play once, when their top is in view and, inside a curtain chapter, once the incoming
- *   panel is at least half way up. Groups that become ready together play as one sequence.
+ * - Groups play once, when their top is in view. Inside a curtain chapter they start early, once
+ *   the incoming panel is 30% up and the text has begun to appear, so they finish around the
+ *   time the panel settles and the reading hold is left for reading. Groups that become ready
+ *   together play as one sequence.
  * - Keyboard focus inside a waiting group shows it at once. Text stays real text throughout:
  *   headings are split into line wrappers only while animating, then restored.
  */
 
 const RISE = 16;
-const DURATION = 0.7;
-const STEP = 0.1; // between items
-const LINE_STEP = 0.09; // between heading lines
+const DURATION = 0.65;
+const STEP = 0.09; // between items
+const LINE_STEP = 0.08; // between heading lines
 const EASE = 'power3.out';
 
 const HEADING = /^H[1-6]$/;
@@ -183,10 +185,11 @@ function scrollGroups() {
   const ready = (group: HTMLElement, vh: number) => {
     const r = group.getBoundingClientRect();
     if (r.height === 0 && r.width === 0) return false; // hidden (e.g. filtered out)
-    if (!(r.top < vh * 0.88 && r.bottom > 0)) return false;
-    // In a curtain chapter, wait until the incoming panel is at least half way up.
     const panel = group.closest('.curtain__panel');
-    return !panel || panel.getBoundingClientRect().top < vh * 0.5;
+    // In a curtain chapter: once the incoming panel is 30% up and the text is about to enter the
+    // screen (within 15% of a viewport below it), so text low in a panel is not late.
+    if (panel) return panel.getBoundingClientRect().top < vh * 0.7 && r.top < vh * 1.15 && r.bottom > 0;
+    return r.top < vh * 0.88 && r.bottom > 0;
   };
 
   const play = (groups: HTMLElement[], quick = false) => {

@@ -18,8 +18,8 @@ import { prefersReducedMotion } from './env';
  * are ordinary stacked sections.
  */
 const ORDER = ['motion', 'intelligence', 'digital'];
-/** Reading hold after a chapter has fully risen, in viewport heights (rise + hold ≈ 1.9 vh). */
-const HOLD = 0.9;
+/** Reading hold after a chapter has fully risen, in viewport heights (rise + hold = 2.1 vh). */
+const HOLD = 1.1;
 /** Background parallax travel, as a fraction of the background's height (each way). */
 const PARALLAX = 0.018;
 /** Background scale that keeps every edge covered across the parallax travel. */
