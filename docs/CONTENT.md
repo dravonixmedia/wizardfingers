@@ -202,6 +202,21 @@ snapping):
 - Only consecutive sections join: a section placed between them ends the run there.
 - Reduced motion or no JavaScript: ordinary stacked sections.
 
+### Text entrances
+
+`src/scripts/entrances.ts` gives text one restrained entrance: a soft fade with a 16px rise
+(0.7s). Items follow each other about 100ms apart, label → heading (line by line) → copy →
+links. It covers the opening (PRANAV, role, headline, supporting line, then the controls) and every
+`data-reveal` group: the discipline sections, Selected Work's heading and filters, About and Contact.
+
+- Each group plays once, when it scrolls into view. In a curtain chapter it waits until the
+  incoming panel is half way up.
+- Keyboard focus inside a waiting group shows it at once. Direct links (`/#contact`) reveal
+  their section on arrival.
+- With reduced motion, or without JavaScript, all text is visible immediately.
+- To animate new copy, put `data-reveal` on its wrapper: its direct children enter in order. Add
+  `data-reveal-each` to a list to bring its items in one by one.
+
 ### Focal points and text-safe areas
 
 - In the opening, the identity, headline and supporting line sit as one centred group at the
@@ -393,9 +408,15 @@ contact: {
   linkedin: 'https://www.linkedin.com/in/<handle>/',
   vimeo: 'https://vimeo.com/<handle>',
   youtube: 'https://www.youtube.com/@<handle>',
-  whatsapp: '441234567890',   // international format, digits only — optional
+  whatsapp: [                 // optional; one link per number, in this order
+    { region: 'India', number: '918086552536', display: '+91 80865 52536' },
+  ],
 },
 ```
+
+WhatsApp entries show as "WhatsApp — <region>" with the formatted number and link to
+`https://wa.me/<number>` in a new tab. The build fails if `display` and `number` are not the same
+digits, so the shown number can never differ from the link.
 
 Empty values are hidden. Invalid values (malformed email, non-https URL, wrong
 domain) are rejected by validation rather than rendered as broken links. With no

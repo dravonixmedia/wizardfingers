@@ -13,6 +13,12 @@ const media = backgrounds.sections.about;
       <p class="label label--accent">{about.label}</p>
       <h2 id="about-title" class="about__title display">{about.headline}</h2>
       <p class="about__body">{about.body}</p>
+      <p class="about__affiliation">
+        {about.affiliation.prefix}{' '}
+        <a href={about.affiliation.url} target="_blank" rel="noopener noreferrer">
+          {about.affiliation.company}<span class="sr-only"> (opens in a new tab)</span>
+        </a>
+      </p>
     </div>
     {
       media?.type === 'video' && (
@@ -65,6 +71,33 @@ const media = backgrounds.sections.about;
   .about__title {
     font-size: var(--h-sub);
     line-height: 1.06;
+  }
+
+  /* Understated: smaller and quieter than the biography; only the company name is a link. */
+  .about__affiliation {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: rgb(242 240 234 / 0.62);
+  }
+
+  .about__affiliation a {
+    color: rgb(242 240 234 / 0.88);
+    text-decoration: underline;
+    text-decoration-color: rgb(242 240 234 / 0.35);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color var(--t-fast), color var(--t-fast);
+  }
+
+  .about__affiliation a:hover {
+    color: var(--c-ivory);
+    text-decoration-color: currentColor;
+  }
+
+  .about__affiliation a:focus-visible {
+    outline: 2px solid var(--c-blue);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 
   .about__body {
