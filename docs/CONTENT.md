@@ -179,10 +179,10 @@ Workers static assets are limited to 25 MiB per file.
   `opening.stages.*`. Stages crossfade as visitors scroll.
   A missing stage falls back to the studio backdrop.
 
-### Section transitions (Motion → Intelligence → Digital)
+### Section transitions (Motion → Intelligence → Digital → Selected Work → About)
 
 Homepage order: opening → Motion → Intelligence → Digital → Selected Work → About → Contact.
-The opening's Scroll cue leads to Motion.
+The opening's Scroll cue leads to Motion. Each opening stage has two viewports of scroll.
 
 With JavaScript on and motion allowed, `src/scripts/chapters.ts` turns these consecutive
 sections into curtain chapters (plain CSS `position: sticky`, native scrolling, no timers or
@@ -191,14 +191,17 @@ snapping):
 - Each section stays whole — background, overlay, text and Pause/Play together — as an opaque
   full-screen panel. The next one rises from the bottom and covers it like a curtain while it
   stays pinned underneath. Scrolling back reverses it exactly.
-- Each chapter is 2.1 viewport heights of scroll: one to rise, then a reading hold
-  (`HOLD = 1.1` in the script). The opening uses one viewport of scroll per stage. Panels taller than the screen (e.g. on short phones) scroll
+- Motion, Intelligence and Digital are 2.7 viewport heights of scroll each: one to rise, then a
+  1.7-viewport reading hold (`ORDER` in the script).
+- Selected Work rises over Digital, then scrolls naturally through every project (no hold); it
+  stays pinned at its end only while About rises over it. About holds for 1.6 viewports, then
+  scrolls away as Contact arrives. Contact and the footer scroll normally. Panels taller than the screen (e.g. on short phones) scroll
   through all their content first, then pin by their bottom edge.
 - The backgrounds drift very slightly (`PARALLAX`, ±1.8%) with a matching scale so no edge is
   ever exposed.
 - Only videos that are visible play: a section is paused once the next one fully covers it.
-- After Digital's hold the pinned run releases and Selected Work, About and Contact scroll as
-  ordinary sections. Nav links and deep links (`/#digital`) land at the start of a chapter's hold.
+- Nav links and deep links (`/#digital`) land at the start of a chapter's hold; Selected Work's
+  land at its top.
 - Only consecutive sections join: a section placed between them ends the run there.
 - Reduced motion or no JavaScript: ordinary stacked sections.
 
@@ -210,8 +213,8 @@ links. It covers the opening (PRANAV, role, headline, supporting line, then the 
 `data-reveal` group: the discipline sections, Selected Work's heading and filters, About and Contact.
 
 - Each group plays once, when it scrolls into view. In a curtain chapter it starts once the
-  incoming panel is 30% up and its text is entering the screen, so it has finished by about the
-  time the panel settles, leaving the reading hold for reading.
+  incoming panel is 20% up and its text is near the screen, so it has finished before the panel
+  settles, leaving the reading hold for reading.
 - Keyboard focus inside a waiting group shows it at once. Direct links (`/#contact`) reveal
   their section on arrival.
 - With reduced motion, or without JavaScript, all text is visible immediately.

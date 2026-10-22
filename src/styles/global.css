@@ -412,9 +412,9 @@ p {
 }
 
 /* Curtain chapters (scripts/chapters.ts; JS on, motion allowed) -----------
-   Motion → Intelligence → Digital: each section is an opaque sticky panel in its own
-   scroll track; the next one rises over it while it stays pinned. Track heights and sticky
-   offsets are set by the script. */
+   Motion → Intelligence → Digital → Selected Work → About: each section is an opaque sticky
+   panel in its own scroll track; the next one rises over it while it stays pinned. Track
+   heights and sticky offsets are set by the script. */
 
 .curtains {
   position: relative;
@@ -438,6 +438,12 @@ p {
 
 .curtain__panel > .bg {
   will-change: transform;
+}
+
+/* Selected Work: links land at the panel's top (it scrolls naturally), so its heading clears the
+   fixed header there on every screen. */
+.curtains .curtain > #work.curtain__panel {
+  padding-top: max(clamp(72px, 9vw, 128px), calc(var(--header-h) + 40px));
 }
 
 /* Motion: reveal hooks (only hidden while JS motion is active) ------------- */

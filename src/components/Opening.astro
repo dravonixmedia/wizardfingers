@@ -313,10 +313,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
      Pinned mode (JS on, motion allowed): one sticky full-screen frame,
      native scrolling through a bounded section drives the three stages.
      --------------------------------------------------------------------- */
-  /* One viewport of scroll per stage: at an ordinary wheel pace each stage's text has settled
-     well before the next transition begins. */
+  /* Two viewports of scroll per stage: at an ordinary 700px/s wheel pace each stage's text
+     settles, then stays fully readable for ~1.5–2s before the next transition begins. */
   :global(html.opening-pinned) .opening {
-    height: calc(100svh + var(--stages) * 100svh);
+    height: calc(100svh + var(--stages) * 200svh);
   }
 
   /* The text group sits at the bottom centre, just above the controls (content packs to the

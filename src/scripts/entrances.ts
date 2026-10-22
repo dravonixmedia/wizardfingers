@@ -9,8 +9,8 @@ import { gsap } from 'gsap';
  * - A group (`[data-reveal]`) animates its direct children. Headings animate by line; other
  *   children as whole blocks; a list marked `[data-reveal-each]` item by item.
  * - Groups play once, when their top is in view. Inside a curtain chapter they start early, once
- *   the incoming panel is 30% up and the text has begun to appear, so they finish around the
- *   time the panel settles and the reading hold is left for reading. Groups that become ready
+ *   the incoming panel is 20% up and the text is near the screen, so they finish before the panel
+ *   settles and the reading hold is left for reading. Groups that become ready
  *   together play as one sequence.
  * - Keyboard focus inside a waiting group shows it at once. Text stays real text throughout:
  *   headings are split into line wrappers only while animating, then restored.
@@ -186,9 +186,10 @@ function scrollGroups() {
     const r = group.getBoundingClientRect();
     if (r.height === 0 && r.width === 0) return false; // hidden (e.g. filtered out)
     const panel = group.closest('.curtain__panel');
-    // In a curtain chapter: once the incoming panel is 30% up and the text is about to enter the
-    // screen (within 15% of a viewport below it), so text low in a panel is not late.
-    if (panel) return panel.getBoundingClientRect().top < vh * 0.7 && r.top < vh * 1.15 && r.bottom > 0;
+    // In a curtain chapter: once the incoming panel is 20% up and the text is near (within 60% of
+    // a viewport below) the screen, so the entrance has finished by the time the panel settles and
+    // the reading hold is left entirely for reading.
+    if (panel) return panel.getBoundingClientRect().top < vh * 0.8 && r.top < vh * 1.6 && r.bottom > 0;
     return r.top < vh * 0.88 && r.bottom > 0;
   };
 

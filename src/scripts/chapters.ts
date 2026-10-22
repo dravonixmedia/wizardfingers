@@ -1,7 +1,8 @@
 import { prefersReducedMotion } from './env';
 
 /**
- * Curtain chapters: Motion → Intelligence → Digital, then Selected Work scrolls in normally.
+ * Curtain chapters: Motion → Intelligence → Digital → Selected Work → About; Contact and the
+ * footer then scroll normally.
  *
  * Progressive enhancement (JS on, motion allowed). Each section stays whole — background,
  * overlay, text and controls — and becomes an opaque sticky panel inside its own scroll track.
@@ -12,14 +13,30 @@ import { prefersReducedMotion } from './env';
  * heights and a subtle background parallax from the scroll position. No wheel/touch
  * interception, snapping or timers, so scrolling back reverses it exactly.
  *
- * Per chapter: a rise (one viewport of scroll) and a reading hold (HOLD viewports). Panels
+ * Per chapter: a rise (one viewport of scroll) and a reading hold (`hold` viewports). Panels
  * taller than the viewport scroll through all their content first, then pin by their bottom
- * edge, so long content stays fully readable. Without JS or with reduced motion the sections
- * are ordinary stacked sections.
+ * edge, so long content stays fully readable. Selected Work (no hold) therefore rises over
+ * Digital, scrolls naturally through every project, and stays pinned at its end only while About
+ * rises over it. About holds for reading, then scrolls away as Contact arrives. Without JS or
+ * with reduced motion the sections are ordinary stacked sections.
  */
-const ORDER = ['motion', 'intelligence', 'digital'];
-/** Reading hold after a chapter has fully risen, in viewport heights (rise + hold = 2.1 vh). */
-const HOLD = 1.1;
+interface ChapterConfig {
+  id: string;
+  /** Reading hold after the panel has fully risen, in viewport heights. */
+  hold: number;
+  /** Subtle background drift (the discipline chapters' video backgrounds). */
+  parallax: boolean;
+  /** Links land at the panel's top (long, scrolling panels) rather than at the start of the hold. */
+  anchorTop?: boolean;
+}
+const ORDER: ChapterConfig[] = [
+  // rise + hold = 2.7 viewports: at an ordinary 700px/s wheel pace ≈ 2–3s of settled reading
+  { id: 'motion', hold: 1.7, parallax: true },
+  { id: 'intelligence', hold: 1.7, parallax: true },
+  { id: 'digital', hold: 1.7, parallax: true },
+  { id: 'work', hold: 0, parallax: false, anchorTop: true },
+  { id: 'about', hold: 1.6, parallax: false },
+];
 /** Background parallax travel, as a fraction of the background's height (each way). */
 const PARALLAX = 0.018;
 /** Background scale that keeps every edge covered across the parallax travel. */
@@ -28,6 +45,7 @@ const PARALLAX_SCALE = 1 + PARALLAX * 2 + 0.004;
 const clamp = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 interface Chapter {
+  config: ChapterConfig;
   section: HTMLElement;
   track: HTMLElement;
   bg: HTMLElement | null;
@@ -41,10 +59,12 @@ export function initChapters() {
 
   // Consecutive sections only (a section between them, e.g. published Experiments, ends the run).
   const sections: HTMLElement[] = [];
-  let el = document.getElementById(ORDER[0]);
-  for (const id of ORDER) {
-    if (!el || el.id !== id) break;
+  const configs: ChapterConfig[] = [];
+  let el = document.getElementById(ORDER[0].id);
+  for (const config of ORDER) {
+    if (!el || el.id !== config.id) break;
     sections.push(el);
+    configs.push(config);
     el = el.nextElementSibling as HTMLElement | null;
   }
   if (sections.length < 2) return;
@@ -53,7 +73,7 @@ export function initChapters() {
   root.className = 'curtains';
   sections[0].before(root);
 
-  const chapters: Chapter[] = sections.map((section) => {
+  const chapters: Chapter[] = sections.map((section, i) => {
     const track = document.createElement('div');
     track.className = 'curtain';
     track.dataset.curtain = section.id;
@@ -61,10 +81,10 @@ export function initChapters() {
     track.append(section);
     section.classList.add('curtain__panel');
     // The chapter has its own background parallax (below), not the GSAP one. Its text entrance
-    // (entrances.ts) waits until the panel is half way up.
-    const bg = section.querySelector<HTMLElement>(':scope > [data-bg]');
-    bg?.removeAttribute('data-parallax-bg');
-    return { section, track, bg, enter: 0, leave: 0 };
+    // (entrances.ts) starts as the panel rises.
+    const bg = configs[i].parallax ? section.querySelector<HTMLElement>(':scope > [data-bg]') : null;
+    section.querySelector<HTMLElement>(':scope > [data-bg]')?.removeAttribute('data-parallax-bg');
+    return { config: configs[i], section, track, bg, enter: 0, leave: 0 };
   });
 
   let vh = window.innerHeight;
@@ -74,13 +94,13 @@ export function initChapters() {
   /** Track heights and sticky offsets; depends only on panel and viewport heights. */
   const layout = () => {
     vh = window.innerHeight;
-    chapters.forEach(({ section, track }, k) => {
+    chapters.forEach(({ config, section, track }, k) => {
       const panel = section.offsetHeight;
       const top = Math.min(0, vh - panel); // taller panels pin by their bottom edge
       const last = k === chapters.length - 1;
       // Non-last tracks overlap the next by one viewport, so the next panel rises while this one
       // is still pinned; this one stays pinned until it is completely covered.
-      const height = HOLD * vh + (last ? vh : 2 * vh) - top;
+      const height = config.hold * vh + (last ? vh : 2 * vh) - top;
       section.style.top = `${top}px`;
       track.style.height = `${Math.round(height)}px`;
       track.style.marginBottom = last ? '' : `${-vh}px`;
@@ -135,8 +155,9 @@ export function initChapters() {
     chapters.forEach(({ section }) => ro.observe(section));
   }
 
-  /** Scroll position at which a chapter has fully risen and starts its hold. */
-  const holdStart = (c: Chapter) => c.track.getBoundingClientRect().top + window.scrollY - Math.min(0, vh - c.section.offsetHeight);
+  const trackTop = (c: Chapter) => c.track.getBoundingClientRect().top + window.scrollY;
+  /** Scroll position at which a chapter has fully risen and starts its hold (long panels: its top). */
+  const holdStart = (c: Chapter) => trackTop(c) - (c.config.anchorTop ? 0 : Math.min(0, vh - c.section.offsetHeight));
 
   // In-page links to a chapter land at the start of its hold (anchors on sticky panels would
   // otherwise resolve against their pinned position).
@@ -153,11 +174,25 @@ export function initChapters() {
   root.addEventListener('focusin', (e) => {
     const c = chapters.find((ch) => ch.section.contains(e.target as Node));
     if (!c) return;
-    const r = (e.target as HTMLElement).getBoundingClientRect();
+    const target = e.target as HTMLElement;
+    const r = target.getBoundingClientRect();
     const k = chapters.indexOf(c);
     const above = chapters[k + 1]?.section.getBoundingClientRect();
-    const hidden = (above && above.top < r.bottom) || r.top < 0 || r.bottom > vh;
-    if (hidden) window.scrollTo({ top: holdStart(c), behavior: 'instant' });
+    const covered = Boolean(above && above.top < r.bottom);
+    if (c.config.anchorTop) {
+      // Long scrolling panel (Selected Work). The browser's own focus scroll misjudges items in a
+      // sticky panel and can overshoot past its end, under the next panel. So whenever a focused
+      // item is not fully visible, place it in its natural flow position first (never past the
+      // point where the panel pins); the browser then has nothing left to scroll.
+      if (!covered && r.top >= 0 && r.bottom <= vh) return;
+      const offset = r.top - c.section.getBoundingClientRect().top;
+      const end = trackTop(c) + c.section.offsetHeight - vh; // last position before it pins
+      const header = document.querySelector('.site-header')?.getBoundingClientRect().bottom ?? 0;
+      const at = Math.max(header + 8, (vh - r.height) / 2); // centred; below the header if tall
+      window.scrollTo({ top: Math.max(trackTop(c), Math.min(end, trackTop(c) + offset - at)), behavior: 'instant' });
+      return;
+    }
+    if (covered || r.top < 0 || r.bottom > vh) window.scrollTo({ top: holdStart(c), behavior: 'instant' });
   });
 
   // A deep link (e.g. /#digital) resolves after the tracks exist, and again after the browser's
