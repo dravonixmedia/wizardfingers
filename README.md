@@ -55,7 +55,8 @@ src/
                   FeatureSection (Motion/Intelligence/Digital), About, Contact, FilmPlayer…
   pages/          index, work/[slug] (one page per published project), media/thumbs (build-time
                   thumbnails for uploaded work), 404, sitemap.xml, robots.txt
-  lib/            media helpers, project-media.ts (folder discovery for Selected Work)
+  lib/            media helpers, project-media.ts (folder discovery for Selected Work, with
+                  automatic video covers via the bundled ffmpeg from @ffmpeg-installer/ffmpeg)
   scripts/        client-side behaviour (opening, backgrounds, menu, filters, media, motion)
 public/           favicons, og/default.png, media/ (videos, incl. media/backgrounds/ — served as-is);
                   media/projects/{motion,intelligence}/ — upload to publish in Selected Work

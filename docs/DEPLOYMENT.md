@@ -99,6 +99,13 @@ If the Worker is connected to this GitHub repository
 Node version comes from `.node-version` (22.22.0). No secrets or environment
 variables are required.
 
+Video covers for Selected Work are extracted during the build with ffmpeg. The build image has no
+ffmpeg, so it comes from the `@ffmpeg-installer/ffmpeg` dependency: a static Linux x64 binary
+installed by `npm ci` from the npm registry, with no download script. `WF_FFMPEG` can point the
+build at another binary. Extracted covers are cached in `node_modules/.astro/`, which Workers
+Builds keeps between builds when **Settings → Build → Build cache** is enabled (optional: without
+it, covers are re-extracted each build). If extraction fails, the build warns and continues.
+
 Pushes to the production branch deploy automatically. Pushes to other branches
 run `npx wrangler preview`, which creates a Worker Preview (named after the
 branch) and never receives production traffic. Wrangler refuses to run

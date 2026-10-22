@@ -274,15 +274,25 @@ renames its entry.
   with a number: `01-halo-villa-film.mp4`, `02-…`. The number is not shown in the title.
 - **Subfolders** are allowed (e.g. `motion/weddings/…`). The category always comes from the
   top-level folder.
-- **Posters:** `<video name>-poster.<jpg|png|webp|avif>` in the same folder is used as the video's
-  thumbnail and is not listed separately. An image with exactly the video's name
-  (`halo-villa-film.jpg`) works too. Without a poster the video shows a dark title card with a
-  play button.
+- **Covers:** every video gets a cover image, in this order:
+  1. **An uploaded poster.** `<video name>-poster.<jpg|jpeg|png|webp|avif>` in the same folder,
+     e.g. `ai-dubai-reel-poster.jpg` next to `ai-dubai-reel.mp4`. An image with exactly the
+     video's name (`ai-dubai-reel.jpg`) works too. Posters are never listed separately. Adding or
+     replacing one updates the cover on the next deployment.
+  2. **A frame from the video**, picked automatically during the build. It is taken from the
+     first seconds (around 1 s) and skips black or blank opening frames. Orientation and
+     proportions follow the video. To choose a different frame, upload a poster.
+  3. If no frame can be read (an unusual codec or a damaged file), the build logs a warning and
+     the card shows a dark title card with a play button. The deployment still succeeds.
+- Extracted covers are cached by video content, so unchanged videos are not processed again.
+  On Cloudflare the cache is kept between builds when **Settings → Build → Build cache** is
+  enabled for the Worker. Without it, covers are simply re-extracted on each build (about a second
+  per video).
 - The same name in two formats (`film.webm` + `film.mp4`) is one entry; browsers pick the format
   they support.
 - Media keeps its own proportions (portrait, square or landscape). Nothing is cropped.
-- Thumbnails (WebP) are generated during the build. Visitors download a video only when they open
-  it. Videos start muted, with sound available from the player controls.
+- Thumbnails (WebP) are generated during the build from the poster or extracted frame. Visitors
+  download a video only when they open it. Videos start muted, with sound available from the player controls.
 - Only the `motion` and `intelligence` folders are scanned. Media for detailed projects (below)
   lives in other folders.
 
