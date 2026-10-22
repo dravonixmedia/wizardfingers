@@ -104,6 +104,11 @@ export function initViewer() {
   dialog.addEventListener('close', () => {
     stage.replaceChildren(); // stops playback and any download
     document.body.style.overflow = '';
-    list[index]?.focus();
+    const card = list[index];
+    if (!card) return;
+    card.focus({ preventScroll: true });
+    // After Previous/Next the last viewed card may be elsewhere in the grid: bring it into view.
+    const r = card.getBoundingClientRect();
+    if (r.top < 0 || r.bottom > window.innerHeight) card.scrollIntoView({ block: 'center', behavior: 'instant' });
   });
 }
